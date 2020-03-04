@@ -57,7 +57,11 @@
     geom_sf( 
       data  = stateMapDat, 
       lwd   = 0.5,
-      color = 'white'
+      color = 'white',
+      fill  = NA
     ) +
     scale_fill_manual( values = c( '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84' ) )+
     theme_bw()
+
+  ggsave('TFRmapBR2010.png')
+  
