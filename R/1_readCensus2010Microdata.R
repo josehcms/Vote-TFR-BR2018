@@ -218,7 +218,8 @@
                 list(
                   religPent = sum( weight[ relig %in% c( 31:39, 42:48 ) ] ) / sum( weight ),
                   religNone = sum( weight[ relig == 0 ] ) / sum( weight ),
-                  religCat  = sum( weight[ relig %in% c( 11, 12, 13, 19 ) ] ) / sum( weight )
+                  religCat  = sum( weight[ relig %in% c( 11, 12, 13, 19 ) ] ) / sum( weight ),
+                  POP       = sum( weight )
                 ),
                 .( MUNICODE )
                ]

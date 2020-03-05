@@ -14,6 +14,7 @@ require(dplyr)
 require(readr)
 require(geobr)
 require(ggplot2)
+require(car)
 
 ##################################################################
 
@@ -50,10 +51,32 @@ datTFR[, TFR := ( 10.65 - 12.55 * pi25_34 ) * C / W ]
 dat <- 
   merge(
     datVotes[!is.na(PSL), .(MUNICODE,MUNINAME,PSL,PT,NUL)],
-    datTFR[,.(MUNICODE, REG = dicReg[as.character(substr(MUNICODE,1,1))], TFR)],
+    datTFR,
     by = 'MUNICODE'
   )
 
+dat[,REG := substr(MUNICODE,1,1)]
+dat[,POP := cut( POP, 
+                 breaks = c( 0, 20000, 50000, 100000, 500000, Inf ), 
+                 labels = c( '[0;20k)', '[20k;50)', '[50k;100k)', '[100k;500k)','[500k;Inf)'),
+                 right = F
+                 )
+    ]
+
+
+mod3 <- 
+  lm( 
+    data = dat,
+    TFR ~ PSL + log( meanInc )  + POP
+  ) 
+
+vif(mod3)
+mod3 %>% summary
+1/(1-0.434)
+# init 4 charts in 1 panel
+x11()
+par(mfrow=c(2,2))
+plot(mod3)
 dat <- 
   rbind(
     dat[,.(MUNICODE,MUNINAME,PSL,PT,NUL,REG='Brasil',TFR)],
