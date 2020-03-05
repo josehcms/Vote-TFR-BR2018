@@ -13,8 +13,11 @@
   require(dplyr)
   require(readr)
 
-  dir <-  
-    "/home/josehcms/Documents/DATA/CENSO/IBGE/2010"
+  # dir <-  
+  #   "/home/josehcms/Documents/DATA/CENSO/IBGE/2010"
+  
+  dir <- 
+    '/media/jose/DATA/CENSO 2010'
 ##################################################################
 
 ### 2. BR census dictionary #-------------------------------------
@@ -60,7 +63,7 @@
   ## Religion     - V6121
   
   filterPerson <- 
-    c( 'V0001', 'V0002', 'V0010','V0601','V6036', 'V6400', 'V6121' )
+    c( 'V0001', 'V0002', 'V1003', 'V0010','V0601','V6036', 'V6400', 'V6121' )
   
   var2010Person <-
     filter( 
@@ -76,7 +79,7 @@
   ## PerCapitaInc - V6531
   
   filterDwelling <- 
-    c( 'V0001', 'V0002', 'V0010', 'V1006', 'V6531' )
+    c( 'V0001', 'V0002', 'V1003', 'V0010', 'V1006', 'V6531' )
   
   var2010Dwelling <-
     filter( 
@@ -309,10 +312,36 @@
         by = 'MUNICODE'
       )
     
-    # 5.5 Save data
+    # 5.5 Compute TFR
+    dtPopPyrTFR[, TFR := ( 10.65 - 12.55 * pi25_34 ) * C / W ] 
+    
+    # 5.6 Change order
+    datMuni <- 
+      dtPopPyrTFR[, 
+                  list(
+                    reg       = substr( MUNICODE, 1, 1 ),
+                    uf        = substr( MUNICODE, 1, 2 ),
+                    municode  = MUNICODE,
+                    pop        = POP,
+                    women15_49 = W,
+                    propW25_34 = pi25_34,
+                    child0_4   = C,
+                    TFR,
+                    religPent,
+                    religCat,
+                    religNone,
+                    educNone,
+                    educPrim = educElemSc,
+                    educSecd = educHighSc,
+                    educTerc = educUniver,
+                    meanInc
+                    )
+                  ]
+    
+    # 5.7 Save data
     saveRDS(
-      dtPopPyrTFR,
-      file = "DATA/dataPopPyrTFR.rds"
+      datMuni,
+      file = "DATA/dataBRCensusMunic.rds"
     )
 ##################################################################
     
