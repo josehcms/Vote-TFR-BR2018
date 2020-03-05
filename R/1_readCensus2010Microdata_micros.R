@@ -220,27 +220,29 @@ dtChildren <-
 
 # 4.4 Religious proportions
 dtRelig <- 
-  dtPerson[ ,
-            list(
-              religPent = sum( weight[ relig %in% c( 31:39, 42:48 ) ] ) / sum( weight ),
-              religNone = sum( weight[ relig == 0 ] ) / sum( weight ),
-              religCat  = sum( weight[ relig %in% c( 11, 12, 13, 19 ) ] ) / sum( weight ),
-              POP       = sum( weight )
-            ),
-            .( MICROCODE )
-            ]
+  dtPerson[ 
+    age >= 18,
+    list(
+      religPent = sum( weight[ relig %in% c( 31:39, 42:48 ) ] ) / sum( weight ),
+      religNone = sum( weight[ relig == 0 ] ) / sum( weight ),
+      religCat  = sum( weight[ relig %in% c( 11, 12, 13, 19 ) ] ) / sum( weight ),
+      POP       = sum( weight )
+      ),
+    .( MICROCODE )
+    ]
 
 # 4.5 Education proportions
 dtEduc <- 
-  dtPerson[ ,
-            list(
-              educNone    = sum( weight[ educ == 1 ] ) / sum( weight ),
-              educElemSc  = sum( weight[ educ == 2 ] ) / sum( weight ),
-              educHighSc  = sum( weight[ educ == 3 ] ) / sum( weight ),
-              educUniver  = sum( weight[ educ == 4 ] ) / sum( weight )
-            ),
-            .( MICROCODE )
-            ]
+  dtPerson[ 
+    age >= 25,
+    list(
+      educNone    = sum( weight[ educ == 1 ] ) / sum( weight ),
+      educElemSc  = sum( weight[ educ == 2 ] ) / sum( weight ),
+      educHighSc  = sum( weight[ educ == 3 ] ) / sum( weight ),
+      educUniver  = sum( weight[ educ == 4 ] ) / sum( weight )
+      ),
+    .( MICROCODE )
+    ]
 
 # 4.6 Merge data 
 dtPopPyrTFR <- 

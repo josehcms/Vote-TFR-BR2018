@@ -55,6 +55,7 @@ datFertVote <-
        women15_49,
        propW25_34,
        child0_4,
+       TFR,
        religPent,
        religCat,
        religNone,
