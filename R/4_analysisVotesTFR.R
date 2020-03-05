@@ -64,6 +64,21 @@ dat[,POP := cut( POP,
     ]
 
 
+
+require(psych)
+factAnaldat <- 
+  dat[complete.cases(dat),.(religPent,religCat,religNone,POP,educNone,educElemSc,educHighSc,educUniver,meanInc)]
+
+#Create the correlation matrix from bfi_data
+factAnal_cor <- cor(factAnaldat)
+
+#Factor analysis of the data
+factors_data <- fa(r = factAnal_cor, nfactors = 3)
+#Getting the factor loadings and model analysis
+
+
+
+plot(factors_data)
 mod3 <- 
   lm( 
     data = dat,
