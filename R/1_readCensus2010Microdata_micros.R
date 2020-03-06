@@ -225,8 +225,7 @@ dtRelig <-
     list(
       religPent = sum( weight[ relig %in% c( 31:39, 42:48 ) ] ) / sum( weight ),
       religNone = sum( weight[ relig == 0 ] ) / sum( weight ),
-      religCat  = sum( weight[ relig %in% c( 11, 12, 13, 19 ) ] ) / sum( weight ),
-      POP       = sum( weight )
+      religCat  = sum( weight[ relig %in% c( 11, 12, 13, 19 ) ] ) / sum( weight )
       ),
     .( MICROCODE )
     ]
@@ -244,7 +243,16 @@ dtEduc <-
     .( MICROCODE )
     ]
 
-# 4.6 Merge data 
+# 4.6 Population totals
+dtPop <- 
+  dtPerson[ , 
+    list(
+      POP = sum( weight )
+    ),
+    .( MICROCODE )
+    ]
+
+# 4.7 Merge data 
 dtPopPyrTFR <- 
   merge(
     dtWomen,
@@ -263,6 +271,13 @@ dtPopPyrTFR <-
   merge(
     dtPopPyrTFR,
     dtEduc,
+    by = 'MICROCODE'
+  )
+
+dtPopPyrTFR <- 
+  merge(
+    dtPopPyrTFR,
+    dtPop,
     by = 'MICROCODE'
   )
 
