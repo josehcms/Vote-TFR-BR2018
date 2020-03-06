@@ -277,8 +277,8 @@ dtDwelling[,
              weight    = as.numeric( V0010 ) / ( 10 ^ 13 ),
              MICROCODE  = paste0( V0001, V1003 ),
              urb       = as.numeric( V1006 ),
-             IncPercap = as.numeric( V6531 )
-           )
+             IncPercap = as.numeric( V6531 )/ 100
+             )
            ]
 
 
