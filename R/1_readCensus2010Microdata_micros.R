@@ -13,11 +13,11 @@ require(data.table)
 require(dplyr)
 require(readr)
 
-# dir <-  
-#   "/home/josehcms/Documents/DATA/CENSO/IBGE/2010"
+dir <-
+  "/home/josehcms/Documents/DATA/CENSO/IBGE/2010"
 
-dir <- 
-  '/media/jose/DATA/CENSO 2010'
+# dir <- 
+#   '/media/jose/DATA/CENSO 2010'
 ##################################################################
 
 ### 2. BR census dictionary #-------------------------------------
@@ -62,9 +62,11 @@ dicDwelling2010 <-
 ## Educ Attainm - V6400
 ## Religion     - V6121
 ## Microrregion - V1003
+## Bolsa Fam    - V0657
+## Control      - V0300
 
 filterPerson <- 
-  c( 'V0001', 'V0002', 'V1003', 'V0010','V0601','V6036', 'V6400', 'V6121' )
+  c( 'V0300', 'V0001', 'V0002', 'V1003', 'V0010','V0601','V6036', 'V6400', 'V6121', 'V0657' )
 
 var2010Person <-
   filter( 
@@ -193,8 +195,9 @@ dtPerson[,
            relig    = as.numeric( substr( V6121, 1, 2 ) ),
            educ     = as.numeric( V6400 ),
            MICROCODE = paste0( V0001, V1003 ),
-           uf        = V0001
-         )
+           uf        = V0001,
+           pbf       = ifelse( V0657 == 1, 1, 0 )
+           )
          ]
 
 # 4.2 Total women 15-49 and 25-34 proportion
@@ -251,6 +254,16 @@ dtPop <-
     ),
     .( MICROCODE )
     ]
+
+# 4.7 Bolsa Familia
+dtPBF <- 
+  dtPerson[ ,
+            list(
+              pbf = ifelse( sum( pbf ) >= 1, 1, 0 )
+              ),
+            .( V0300 )
+            ] %>%
+  
 
 # 4.7 Merge data 
 dtPopPyrTFR <- 
