@@ -34,6 +34,7 @@ dat <-
 * ```educSecd```: proporção de pessoas (25 anos ou mais) com ensino médio completo ou superior incompleto (censo 2010)
 * ```educterc```: proporção de pessoas (25 anos ou mais) com ensino superior completo (censo 2010)
 * ```meanInc```: renda per capita domiciliar média da Microrregião em reais (censo 2010)
+*```pbf```: proporção de domicílios que declararam receber algum benefício do programa bolsa família (censo 2010)
 * ```voteUteis```: total de votos úteis para candidatos à presidência (eleições 2018)
 * ```voteBrancos```: total de votos brancos para candidatos à presidência (eleições 2018)
 * ```voteNulos```: total de votos nulos para candidatos à presidência (eleições 2018)
