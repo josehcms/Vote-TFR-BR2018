@@ -64,6 +64,7 @@ datFertVote <-
        educSecd,
        educTerc,
        meanInc,
+       pbf,
        voteUteis,
        voteBrancos,
        voteNulos,

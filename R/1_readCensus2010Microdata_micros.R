@@ -257,15 +257,28 @@ dtPop <-
 
 # 4.7 Bolsa Familia
 dtPBF <- 
-  dtPerson[ ,
-            list(
-              pbf = ifelse( sum( pbf ) >= 1, 1, 0 )
-              ),
-            .( V0300 )
+  dtPerson[ , 
+            pbf.dwelling := sum( pbf, na.rm = T ), 
+            .( V0300 ) 
             ] %>%
+  .[ ,
+     list(
+       pbf     = ifelse( pbf.dwelling > 0, 1, 0 ),
+       weight,
+       MICROCODE
+       ),
+     .( V0300 )
+     ] %>%
+  unique %>%
+  .[ , 
+     list(
+       pbf = sum( pbf * weight ) / sum( weight )
+       ),
+     .( MICROCODE )
+     ]
   
 
-# 4.7 Merge data 
+# 4.8 Merge data 
 dtPopPyrTFR <- 
   merge(
     dtWomen,
@@ -291,6 +304,13 @@ dtPopPyrTFR <-
   merge(
     dtPopPyrTFR,
     dtPop,
+    by = 'MICROCODE'
+  )
+
+dtPopPyrTFR <- 
+  merge(
+    dtPopPyrTFR,
+    dtPBF,
     by = 'MICROCODE'
   )
 
@@ -367,7 +387,8 @@ datMicro <-
                 educPrim = educElemSc,
                 educSecd = educHighSc,
                 educTerc = educUniver,
-                meanInc
+                meanInc,
+                pbf
                 )
               ]
 
