@@ -238,19 +238,26 @@ dtEduc <-
   dtPerson[ 
     age >= 25,
     list(
-      educNone    = sum( weight[ educ == 1 ] ) / sum( weight ),
-      educElemSc  = sum( weight[ educ == 2 ] ) / sum( weight ),
-      educHighSc  = sum( weight[ educ == 3 ] ) / sum( weight ),
-      educUniver  = sum( weight[ educ == 4 ] ) / sum( weight )
+      educNone.fem    = sum( weight[ educ == 1 & sex == 2 ] ) / sum( weight & sex == 2 ),
+      educElemSc.fem  = sum( weight[ educ == 2 & sex == 2 ] ) / sum( weight & sex == 2 ),
+      educHighSc.fem  = sum( weight[ educ == 3 & sex == 2 ] ) / sum( weight & sex == 2 ),
+      educUniver.fem  = sum( weight[ educ == 4 & sex == 2 ] ) / sum( weight & sex == 2 ),
+      educNone.mal    = sum( weight[ educ == 1 & sex == 1 ] ) / sum( weight & sex == 1 ),
+      educElemSc.mal  = sum( weight[ educ == 2 & sex == 1 ] ) / sum( weight & sex == 1 ),
+      educHighSc.mal  = sum( weight[ educ == 3 & sex == 1 ] ) / sum( weight & sex == 1 ),
+      educUniver.mal  = sum( weight[ educ == 4 & sex == 1 ] ) / sum( weight & sex == 1 )
       ),
     .( MICROCODE )
     ]
 
-# 4.6 Population totals
+# 4.6 Population totals, age-dependecy ratio and sex ratio
 dtPop <- 
   dtPerson[ , 
     list(
-      POP = sum( weight )
+      POP            = sum( weight ),
+      depRatio.youth = sum( weight[ age < 15 ] ) / sum( age > 14 & age < 65),
+      depRatio.elder = sum( weight[ age > 64 ] ) / sum( age > 14 & age < 65),
+      sexRatio       = sum( weight[ sex == 1 ] ) / sum( weight[ sex == 2 ] )
     ),
     .( MICROCODE )
     ]
@@ -380,13 +387,20 @@ datMicro <-
                 propW25_34 = pi25_34,
                 child0_4   = C,
                 TFR,
+                depRatio.youth,
+                depRatio.elder,
+                sexRatio,
                 religPent,
                 religCat,
                 religNone,
-                educNone,
-                educPrim = educElemSc,
-                educSecd = educHighSc,
-                educTerc = educUniver,
+                educNone.fem,
+                educNone.mal,
+                educPrim.fem = educElemSc.fem,
+                educPrim.mal = educElemSc.mal,
+                educSecd.fem = educHighSc.fem,
+                educSecd.mal = educHighSc.mal,
+                educTerc.fem = educUniver.fem,
+                educTerc.mal = educUnive.mal,
                 meanInc,
                 pbf
                 )
