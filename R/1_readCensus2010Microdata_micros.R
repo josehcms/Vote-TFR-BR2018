@@ -2,7 +2,7 @@
 ### Project: TFR and Vote in Brazilian 2018 elections
 ### Supplementary material 1 - read BR 2010 census data for micros
 ### Author: Jose H C Monteiro da Silva
-### Last update: 2020-03-05
+### Last update: 2020-03-15
 ##################################################################
 
 ### 1. Housekeeping and package loading #-------------------------
@@ -13,11 +13,11 @@ require(data.table)
 require(dplyr)
 require(readr)
 
+# dir <-
+#   "/home/josehcms/Documents/DATA/CENSO/IBGE/2010"
+# 
 dir <-
-  "/home/josehcms/Documents/DATA/CENSO/IBGE/2010"
-
-# dir <- 
-#   '/media/jose/DATA/CENSO 2010'
+  '/media/jose/DATA/CENSO 2010'
 ##################################################################
 
 ### 2. BR census dictionary #-------------------------------------
@@ -183,15 +183,7 @@ dtPerson[,
          `:=` (
            weight   = as.numeric( V0010 ) / ( 10 ^ 13 ),
            sex      = as.numeric( V0601 ),
-           age      = as.numeric( 
-             paste0( 
-               cut( as.numeric( V6036 ), 
-                    breaks = c( seq( 0, 50, 5 ), Inf ) , 
-                    labels = seq( 0, 50, 5 ), 
-                    right = F 
-               )
-             )
-           ),
+           age      = as.numeric( V6036 ),
            relig    = as.numeric( substr( V6121, 1, 2 ) ),
            educ     = as.numeric( V6400 ),
            MICROCODE = paste0( V0001, V1003 ),
@@ -400,7 +392,7 @@ datMicro <-
                 educSecd.fem = educHighSc.fem,
                 educSecd.mal = educHighSc.mal,
                 educTerc.fem = educUniver.fem,
-                educTerc.mal = educUnive.mal,
+                educTerc.mal = educUniver.mal,
                 meanInc,
                 pbf
                 )
