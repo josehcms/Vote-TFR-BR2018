@@ -2,7 +2,7 @@
 ### Project: TFR and Vote in Brazilian 2018 elections
 ### Supplementary material 2 - merge vote and census data
 ### Author: Jose H C Monteiro da Silva
-### Last update: 2020-03-05
+### Last update: 2020-03-15
 ##################################################################
 
 ### 1. Housekeeping and package loading #-------------------------
@@ -38,7 +38,7 @@ dicReg <-
 
 ### 3. Merge data #-----------------------------------------------
 
-datFertVote <-
+datComplete <-
   merge(
     datCensus,
     datTSE,
@@ -57,22 +57,35 @@ datFertVote <-
        propW25_34,
        child0_4,
        TFR,
+       depRatio.youth,
+       depRatio.elder,
+       sexRatio,
        religPent,
        religCat,
        religNone,
-       educNone,
-       educPrim,
-       educSecd,
-       educTerc,
+       educNone.fem, educNone.mal,
+       educPrim.fem, educPrim.mal,
+       educSecd.fem, educSecd.mal,
+       educTerc.fem, educTerc.mal,
        meanInc,
        pbf,
-       voteUteis,
-       voteBrancos,
-       voteNulos,
-       voteNOVO,
-       voteMDB,
-       votePT,
-       votePSL
+       qInfant.fem = q.infan_f,
+       qInfant.mal = q.infan_m,
+       qAdult.fem  = q.adult_f,
+       qAdult.mal  = q.adult_m,
+       q0_5.fem    = q0_5_f,
+       q0_5.mal    = q0_5_m,
+       e0.mal      = e0_m,
+       e0.fem      = e0_f,
+       e20.mal     = e20_m,
+       e20.fem     = e20_f,
+       e40.mal     = e40_m,
+       e40.fem     = e40_f,
+       e60.mal     = e60_m,
+       e60.fem     = e60_f,
+       brancos10, nulos10, pt10, uteis10,
+       brancos14, nulos14, pt14, uteis14,
+       brancos18, nulos18, pt18, novo18, mdb18, psl18, uteis18
        )
      ]
   
@@ -80,9 +93,9 @@ datFertVote <-
 
 ### 4. Save data #------------------------------------------------
 
-saveRDS(
-  datFertVote,
-  file = 'DATA/mergedDataVoteCensus_micro.rds'
+write_csv2(
+  datComplete,
+  'DATA/demographic_elections_10_14_18_data.csv'
 )
 
 ##################################################################
