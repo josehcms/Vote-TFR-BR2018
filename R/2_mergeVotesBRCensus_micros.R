@@ -24,6 +24,7 @@ datCensus <-
 datTSE <- 
   fread( "DATA/votes_micro.csv" )
 
+
 dicReg <- 
   c(
     '1' = 'Norte',
