@@ -247,8 +247,8 @@ dtPop <-
   dtPerson[ , 
     list(
       POP            = sum( weight ),
-      depRatio.youth = sum( weight[ age < 15 ] ) / sum( age > 14 & age < 65),
-      depRatio.elder = sum( weight[ age > 64 ] ) / sum( age > 14 & age < 65),
+      depRatio.youth = sum( weight[ age < 15 ] ) / sum( weight[ age > 14 & age < 65 ] ),
+      depRatio.elder = sum( weight[ age > 64 ] ) / sum( weight[ age > 14 & age < 65 ] ),
       sexRatio       = sum( weight[ sex == 1 ] ) / sum( weight[ sex == 2 ] )
     ),
     .( MICROCODE )
@@ -398,7 +398,39 @@ datMicro <-
                 )
               ]
 
-# 5.7 Save data
+# 5.7 Add mortality data
+
+lt.micros <- 
+  fread(
+    '/media/jose/DATA/Dropbox (IPC-IG)/BRASIL 3 TEMPOS RPPS/RELATORIOS DOS PESQUISADORES/Jose Henrique/TABUAS DE VIDA/DATA/lt.micro.2010.csv'
+    )
+
+datMort <- 
+  lt.micros[ ,
+    list(
+      q.adult = sum( ndx[ age %in% 15:59 ] ) / lx [ age == 15 ],
+      q.infan = nqx[ age == 0 ],
+      q0_5    = sum( ndx[ age %in% 0:4 ] ) / lx [ age == 0 ],
+      e0      = ex[ age == 0 ],
+      e20     = ex[ age == 20 ],
+      e40     = ex[ age == 40 ],
+      e60     = ex[ age == 60 ]
+    ),
+    .( microcode, sex )
+  ] %>%
+  dcast( 
+    microcode ~ sex , 
+    value.var = c( 'q.adult', 'q.infan', 'q0_5', 'e0', 'e20', 'e40', 'e60' ) 
+    )
+
+datMicro <- 
+  merge(
+    datMicro,
+    datMort,
+    by = 'microcode'
+  )
+
+# 5.8 Save data
 saveRDS(
   datMicro,
   file = "DATA/dataBRCensusMicro.rds"
