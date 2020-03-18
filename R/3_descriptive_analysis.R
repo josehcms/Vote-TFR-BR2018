@@ -507,60 +507,63 @@
 
 ### 6. x-y graphs #-------------------------------------------------
   
+  datVote.plot <- 
+    merge(
+      datVote.map,
+      datVote[ , .( microcode, TFR, educNone.fem, educNone.mal, educSecd.fem, educSecd.mal ) ],
+      by = 'microcode'
+    )
+
   # 6.1 Vote PT and TFT
-  x11()
-  ggplot( 
-    data = datVote 
+  pt.tfr <- 
+    ggplot( 
+      data = datVote.plot[ vote == 'PT' ]
+    ) +
+    labs(
+      title    = 'Votos no PT em Primeiro Turno vs Taxa de Fecundidade Total (TFT)',
+      subtitle = 'Microrregiões - Brasil, 2010 e Eleições 2010, 2014 e 2018',
+      caption  = 'Fonte: IBGE, Censo Demográfico 2010 e IPEADATA' 
     ) +
     geom_point(
       aes( 
-        x = log( pt10.p ),
-        y = TFR
-        ),
-      color = 'tomato3'
+        y = prop ,
+        x = TFR
+      ),
+      color = 'black',
+      size  = 0.75
     ) +
     geom_smooth(
       aes( 
-        x = log( pt10.p ),
-        y = TFR
+        y = prop,
+        x = TFR
       ),
-      color = 'tomato3',
-      span  = 0.8,
+      color = 'steelblue3',
+      span  = 0.85,
       se    = F
     ) +
-    geom_point(
-      aes( 
-        x = log( pt14.p ),
-        y = TFR
-      ),
-      color = 'forestgreen'
+    scale_x_continuous( 
+      breaks = seq( 0.5, 5.5, 0.5 ),
+      name   = 'TFT 2010'
+      ) +
+    scale_y_continuous( 
+      breaks = seq( 0, 1, 0.1 ),
+      labels = paste0( seq( 0, 100, 10 ) ),
+      name   = '% votos PT - Primeiro Turno'
     ) +
-    geom_smooth(
-      aes( 
-        x = log( pt14.p ),
-        y = TFR
-      ),
-      color = 'forestgreen',
-      span  = 0.8,
-      se    = F
-    ) +
-    geom_point(
-      aes( 
-        x = log( pt18.p ),
-        y = TFR
-      ),
-      color = 'skyblue'
-    ) +
-    geom_smooth(
-      aes( 
-        x = log( pt18.p ),
-        y = TFR
-      ),
-      color = 'skyblue',
-      span  = 0.8,
-      se    = F
-    ) +
-    theme_bw()
+    facet_wrap( 
+      ~ year,
+      nrow = 1
+      ) +
+    theme_bw() +
+    theme(
+      plot.title   = element_text( hjust = 0, size = 14 ),
+      plot.subtitle = element_text( hjust = 0, size = 13 ),
+      plot.caption = element_text( hjust = 1, size = 12 ),
+      legend.text  = element_text( size = 12 ),
+      strip.text   = element_text( size = 13 )
+    )
+  
+  ggsave( 'OUTPUTS/pt_vs_tft.png', width = 8, height = 4 )
 ####################################################################
     microMap.centroids <-
     st_centroid( microMapDat )
