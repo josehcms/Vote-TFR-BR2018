@@ -565,7 +565,7 @@
   
   ggsave( 'OUTPUTS/pt_vs_tft.png', width = 8, height = 4 )
   
-  # 6.1 Vote PT and TFT
+  # 6.2 Vote Brancos and TFT
   brancos.tfr <- 
     ggplot( 
       data = datVote.plot[ vote == 'Brancos' ]
@@ -615,6 +615,57 @@
     )
   
   ggsave( 'OUTPUTS/brancos_vs_tft.png', width = 8, height = 4 )
+  
+  # 6.3 Vote Nulos and TFT
+  nulos.tfr <- 
+    ggplot( 
+      data = datVote.plot[ vote == 'Nulos' ]
+    ) +
+    labs(
+      title    = 'Votos Nulos em Primeiro Turno vs Taxa de Fecundidade Total (TFT)',
+      subtitle = 'Microrregiões - Brasil, 2010 e Eleições 2010, 2014 e 2018',
+      caption  = 'Fonte: IBGE, Censo Demográfico 2010 e IPEADATA' 
+    ) +
+    geom_point(
+      aes( 
+        y = prop ,
+        x = TFR
+      ),
+      color = 'black',
+      size  = 0.75
+    ) +
+    geom_smooth(
+      aes( 
+        y = prop,
+        x = TFR
+      ),
+      color = 'steelblue3',
+      span  = 0.85,
+      se    = F
+    ) +
+    scale_x_continuous( 
+      breaks = seq( 0.5, 5.5, 0.5 ),
+      name   = 'TFT 2010'
+    ) +
+    scale_y_continuous( 
+      breaks = seq( 0, 0.15, 0.025 ),
+      labels = paste0( seq( 0, 15, 2.5 ) ),
+      name   = '% votos Nulos - Primeiro Turno'
+    ) +
+    facet_wrap( 
+      ~ year,
+      nrow = 1
+    ) +
+    theme_bw() +
+    theme(
+      plot.title   = element_text( hjust = 0, size = 14 ),
+      plot.subtitle = element_text( hjust = 0, size = 13 ),
+      plot.caption = element_text( hjust = 1, size = 12 ),
+      legend.text  = element_text( size = 12 ),
+      strip.text   = element_text( size = 13 )
+    )
+  
+  ggsave( 'OUTPUTS/nulos_vs_tft.png', width = 8, height = 4 )
 ####################################################################
     microMap.centroids <-
     st_centroid( microMapDat )
