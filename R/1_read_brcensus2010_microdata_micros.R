@@ -230,14 +230,14 @@ dtEduc <-
   dtPerson[ 
     age >= 25,
     list(
-      educNone.fem    = sum( weight[ educ == 1 & sex == 2 ] ) / sum( weight & sex == 2 ),
-      educElemSc.fem  = sum( weight[ educ == 2 & sex == 2 ] ) / sum( weight & sex == 2 ),
-      educHighSc.fem  = sum( weight[ educ == 3 & sex == 2 ] ) / sum( weight & sex == 2 ),
-      educUniver.fem  = sum( weight[ educ == 4 & sex == 2 ] ) / sum( weight & sex == 2 ),
-      educNone.mal    = sum( weight[ educ == 1 & sex == 1 ] ) / sum( weight & sex == 1 ),
-      educElemSc.mal  = sum( weight[ educ == 2 & sex == 1 ] ) / sum( weight & sex == 1 ),
-      educHighSc.mal  = sum( weight[ educ == 3 & sex == 1 ] ) / sum( weight & sex == 1 ),
-      educUniver.mal  = sum( weight[ educ == 4 & sex == 1 ] ) / sum( weight & sex == 1 )
+      educNone.fem    = sum( weight[ educ == 1 & sex == 2 ] ) / sum( weight[ sex == 2 ] ),
+      educElemSc.fem  = sum( weight[ educ == 2 & sex == 2 ] ) / sum( weight[ sex == 2 ] ),
+      educHighSc.fem  = sum( weight[ educ == 3 & sex == 2 ] ) / sum( weight[ sex == 2 ] ),
+      educUniver.fem  = sum( weight[ educ == 4 & sex == 2 ] ) / sum( weight[ sex == 2 ] ),
+      educNone.mal    = sum( weight[ educ == 1 & sex == 1 ] ) / sum( weight[ sex == 1 ] ),
+      educElemSc.mal  = sum( weight[ educ == 2 & sex == 1 ] ) / sum( weight[ sex == 1 ] ),
+      educHighSc.mal  = sum( weight[ educ == 3 & sex == 1 ] ) / sum( weight[ sex == 1 ] ),
+      educUniver.mal  = sum( weight[ educ == 4 & sex == 1 ] ) / sum( weight[ sex == 1 ] )
       ),
     .( MICROCODE )
     ]
