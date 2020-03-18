@@ -2,7 +2,7 @@
 ### Project: TFR and Vote in Brazilian 2018 elections
 ### Descriptive analysis
 ### Author: Jose H C Monteiro da Silva
-### Last update: 2020-03-15
+### Last update: 2020-03-18
 ##################################################################
 
 ### 1. Housekeeping and package loading #-------------------------
@@ -113,6 +113,49 @@
              )
            )]
  
+  # 4.3 set data for map plot of votes using facet_wrap
+  datVote.map <- 
+    datVote[ , 
+             .( microcode,
+                pt10.p, pt14.p, pt18.p, 
+                nulos10.p, nulos14.p, nulos18.p, 
+                brancos10.p, brancos14.p, brancos18.p 
+                ) 
+             ] %>%
+    melt( 
+      id.vars = c( 'microcode' ),
+      measure.vars = c( 'pt10.p', 'pt14.p', 'pt18.p', 
+                        'nulos10.p', 'nulos14.p', 'nulos18.p', 
+                        'brancos10.p', 'brancos14.p', 'brancos18.p' 
+                        ),
+      variable.name = 'vote.year',
+      value.name    = 'prop'
+      ) %>%
+    .[ ,
+       list(
+         microcode,
+         year = ifelse( grepl( '10', vote.year ),
+                        2010,
+                        ifelse( grepl( '14', vote.year ),
+                                2014,
+                                2018 
+                                )
+                        ),
+         vote = ifelse( grepl( 'pt', vote.year ),
+                        'PT',
+                        ifelse( grepl( 'brancos', vote.year ),
+                                'Brancos',
+                                'Nulos' 
+                                )
+                        ),
+         prop
+         ) 
+       ]
+  
+
+
+  classIntervals(  datVote.map[vote=='Brancos' & year==2018]$prop, style = 'jenks', 5 )
+  classIntervals(  datVote.map[vote=='Nulos']$prop, style = 'jenks', 6 )
 ####################################################################
   
 ### 5. Plot descriptive maps #--------------------------------------
@@ -126,12 +169,79 @@
       by.y = 'microcode'
     )
   
+  ptmap.dat <- 
+    merge(
+      microMapDat,
+      datVote.map[ 
+        vote == 'PT',
+        list( 
+          microcode, 
+          year, 
+          prop.class = cut(
+            prop,
+            breaks  = c( 0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.80, 0.99 ),
+            labels  = c( '[0.00;0.10)', '[0.10;0.20)', '[0.20;0.30)', 
+                         '[0.30;0.40)', '[0.40;0.50)', '[0.50;0.60)', 
+                         '[0.60;0.80)', '[0.80;0.99)'
+            ),
+            right = FALSE
+            )
+          )
+        ],
+      by.x = 'code_micro',
+      by.y = 'microcode'
+    )
+  
+  brancosmap.dat <- 
+    merge(
+      microMapDat,
+      datVote.map[ 
+        vote == 'Brancos',
+        list( 
+          microcode, 
+          year, 
+          prop.class = cut(
+            prop,
+            breaks  = c( 0, 0.015, 0.025, 0.035, 0.045, 0.065 ),
+            labels  = c( '[0.000;0.015)', '[0.015;0.025)', '[0.025;0.035)', 
+                         '[0.035;0.045)', '[0.045;0.065)'
+                         ),
+            right = FALSE
+          )
+        )
+        ],
+      by.x = 'code_micro',
+      by.y = 'microcode'
+    )
+  
+  nulosmap.dat <- 
+    merge(
+      microMapDat,
+      datVote.map[ 
+        vote == 'Nulos',
+        list( 
+          microcode, 
+          year, 
+          prop.class = cut(
+            prop,
+            breaks  = c( 0.020, 0.040, 0.050, 0.065, 0.080, 0.100, 0.140 ),
+            labels  = c( '[0.020;0.040)', '[0.040;0.050)', '[0.050;0.065)', 
+                         '[0.065;0.080)', '[0.080;0.100)', '[0.100;0.140)'
+            ),
+            right = FALSE
+          )
+        )
+        ],
+      by.x = 'code_micro',
+      by.y = 'microcode'
+    )
+  
   # 5.2 TFR map
   TFR.map <- 
     ggplot( ) +
     labs(
       title   = 'Taxas de Fecundidade Total por Microrregião - Brasil, 2010',
-      caption = 'IBGE, Censo Demográfico 2010'
+      caption = 'Fonte: IBGE, Censo Demográfico 2010'
     ) +
     geom_sf( 
       data = map.dat,
@@ -155,8 +265,9 @@
     theme_bw() +
     theme(
       plot.title   = element_text( hjust = 0, size = 12 ),
-      plot.caption = element_text( hjust = 1, size = 10 ),
+      plot.caption = element_text( hjust = 1, size = 10 )
     )
+  ggsave( 'OUTPUTS/tft_2010.png', width = 6, height = 6 )
   
   # 5.3 PT Vote map
   pt10.map <- 
@@ -189,6 +300,8 @@
     theme(
       plot.title   = element_text( hjust = 0, size = 12 ),
       plot.caption = element_text( hjust = 1, size = 10 ),
+      legend.position  = 'top',
+      legend.direction = 'horizontal' 
     )
   
   pt14.map <- 
@@ -221,6 +334,7 @@
     theme(
       plot.title   = element_text( hjust = 0, size = 12 ),
       plot.caption = element_text( hjust = 1, size = 10 ),
+      legend.position = 'none'
     )
   
   pt18.map <- 
@@ -253,11 +367,142 @@
     theme(
       plot.title   = element_text( hjust = 0, size = 12 ),
       plot.caption = element_text( hjust = 1, size = 10 ),
+      legend.position = 'none'
     )
   
-  # 5.3 all plots
-  x11()
-  grid.arrange( TFR.map, pt10.map ,pt14.map , pt18.map, ncol = 2 )
+  ptall.map <- 
+   ggplot( ) +
+    labs(
+      title    = 'Proporção de votos válidos no PT',
+      subtitle = '1º Turno - Eleições Presidenciais Brasil - 2010, 2014, 2018',
+      caption  = 'Fonte: IPEADATA'
+    ) +
+    geom_sf( 
+      data = ptmap.dat,
+      color = 'white',
+      lwd = .01,
+      aes(
+        fill = prop.class
+      )
+    ) +
+    facet_wrap( 
+      ~ year,
+      nrow = 1
+      ) +
+    scale_fill_manual(
+      values  = c( '[0.00;0.10)'='#fee0d2', '[0.10;0.20)'='#fcbba1', '[0.20;0.30)'='#fc9272', 
+                   '[0.30;0.40)'='#fb6a4a', '[0.40;0.50)'='#ef3b2c', '[0.50;0.60)'='#cb181d', 
+                   '[0.60;0.80)'='#a50f15', '[0.80;0.99)'='#67000d' ),
+      name    = ''
+    ) +
+    geom_sf( 
+      data  = stateMapDat,
+      color = 'black',
+      lwd   = .50,
+      fill  = NA
+    ) +
+    theme_bw() +
+    theme(
+      plot.title   = element_text( hjust = 0, size = 14 ),
+      plot.subtitle = element_text( hjust = 0, size = 13 ),
+      plot.caption = element_text( hjust = 1, size = 12 ),
+      legend.text  = element_text( size = 12 ),
+      strip.text   = element_text( size = 13 ), 
+      legend.position = c(1.09, 0.60),
+      plot.margin = margin( 0.25, 3.75, 0.25, 0.25, "cm")
+    )
+  
+  ggsave( 'OUTPUTS/votos_pt.png', width = 10, height = 6 )
+  
+  # 5.4 Brancos votes
+  brancosall.map <- 
+    ggplot( ) +
+    labs(
+      title    = 'Proporção de votos brancos dentre votos totais',
+      subtitle = '1º Turno - Eleições Presidenciais Brasil - 2010, 2014, 2018',
+      caption  = 'Fonte: IPEADATA'
+    ) +
+    geom_sf( 
+      data = brancosmap.dat,
+      color = 'white',
+      lwd = .01,
+      aes(
+        fill = prop.class
+      )
+    ) +
+    facet_wrap( 
+      ~ year,
+      nrow = 1
+    ) +
+    scale_fill_manual(
+      values  = c( '[0.000;0.015)'='#bcbddc', '[0.015;0.025)'='#9e9ac8', '[0.025;0.035)'='#807dba', 
+                   '[0.035;0.045)'='#6a51a3', '[0.045;0.065)'='#4a1486' ),
+      name    = ''
+    ) +
+    geom_sf( 
+      data  = stateMapDat,
+      color = 'black',
+      lwd   = .50,
+      fill  = NA
+    ) +
+    theme_bw() +
+    theme(
+      plot.title   = element_text( hjust = 0, size = 14 ),
+      plot.subtitle = element_text( hjust = 0, size = 13 ),
+      plot.caption = element_text( hjust = 1, size = 12 ),
+      legend.text  = element_text( size = 12 ),
+      strip.text   = element_text( size = 13 ), 
+      legend.position = c(1.09, 0.60),
+      plot.margin = margin( 0.25, 3.75, 0.25, 0.25, "cm")
+    )
+  
+  ggsave( 'OUTPUTS/votos_brancos.png', width = 10, height = 6 )
+  
+  # 5.4 Brancos votes
+  nulosall.map <- 
+    ggplot( ) +
+    labs(
+      title    = 'Proporção de votos nulos dentre votos totais',
+      subtitle = '1º Turno - Eleições Presidenciais Brasil - 2010, 2014, 2018',
+      caption  = 'Fonte: IPEADATA'
+    ) +
+    geom_sf( 
+      data = nulosmap.dat,
+      color = 'white',
+      lwd = .01,
+      aes(
+        fill = prop.class
+      )
+    ) +
+    facet_wrap( 
+      ~ year,
+      nrow = 1
+    ) +
+    scale_fill_manual(
+      values  = c( '[0.020;0.040)'='#c7e9c0', '[0.040;0.050)'='#a1d99b', '[0.050;0.065)'='#74c476', 
+                   '[0.065;0.080)'='#41ab5d', '[0.080;0.100)'='#238b45', '[0.100;0.140)'='#005a32' ),
+      name    = ''
+    ) +
+    geom_sf( 
+      data  = stateMapDat,
+      color = 'black',
+      lwd   = .50,
+      fill  = NA
+    ) +
+    theme_bw() +
+    theme(
+      plot.title   = element_text( hjust = 0, size = 14 ),
+      plot.subtitle = element_text( hjust = 0, size = 13 ),
+      plot.caption = element_text( hjust = 1, size = 12 ),
+      legend.text  = element_text( size = 12 ),
+      strip.text   = element_text( size = 13 ), 
+      legend.position = c(1.09, 0.60),
+      plot.margin = margin( 0.25, 3.75, 0.25, 0.25, "cm")
+    )
+  
+  ggsave( 'OUTPUTS/votos_nulos.png', width = 10, height = 6 )
+  # x11()
+  # grid.arrange( TFR.map, pt10.map ,pt14.map , pt18.map, ncol = 2 )
 ####################################################################
 
 ### 6. x-y graphs #-------------------------------------------------
