@@ -179,11 +179,10 @@
           year, 
           prop.class = cut(
             prop,
-            breaks  = c( 0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.80, 0.99 ),
-            labels  = c( '[0.00;0.10)', '[0.10;0.20)', '[0.20;0.30)', 
-                         '[0.30;0.40)', '[0.40;0.50)', '[0.50;0.60)', 
-                         '[0.60;0.80)', '[0.80;0.99)'
-            ),
+            breaks  = c( 0, 0.15, 0.30, 0.45, 0.60, 0.80, 0.99 ),
+            labels  = c( '[0.00;0.15)', '[0.15;0.30)', '[0.30;0.45)', 
+                         '[0.45;0.60)','[0.60;0.80)', '[0.80;0.99)'
+                         ),
             right = FALSE
             )
           )
@@ -270,106 +269,6 @@
   ggsave( 'OUTPUTS/tft_2010.png', width = 6, height = 6 )
   
   # 5.3 PT Vote map
-  pt10.map <- 
-    ggplot( ) +
-    labs(
-      title   = '% de votos válidos no PT - Brasil, 2010',
-      caption = 'IPEADATA'
-    ) +
-    geom_sf( 
-      data = map.dat,
-      color = 'white',
-      lwd = .01,
-      aes(
-        fill = pt10.p.class
-      )
-    ) +
-    scale_fill_manual(
-      values  = c( '[0.00;0.10)'='#fee0d2', '[0.10;0.20)'='#fcbba1', '[0.20;0.30)'='#fc9272', 
-                   '[0.30;0.40)'='#fb6a4a', '[0.40;0.50)'='#ef3b2c', '[0.50;0.60)'='#cb181d', 
-                   '[0.60;0.80)'='#a50f15', '[0.80;0.99)'='#67000d' ),
-      name    = ''
-    ) +
-    geom_sf( 
-      data  = stateMapDat,
-      color = 'black',
-      lwd   = .50,
-      fill  = NA
-    ) +
-    theme_bw() +
-    theme(
-      plot.title   = element_text( hjust = 0, size = 12 ),
-      plot.caption = element_text( hjust = 1, size = 10 ),
-      legend.position  = 'top',
-      legend.direction = 'horizontal' 
-    )
-  
-  pt14.map <- 
-    ggplot( ) +
-    labs(
-      title   = '% de votos válidos no PT - Brasil, 2014',
-      caption = 'IPEADATA'
-    ) +
-    geom_sf( 
-      data = map.dat,
-      color = 'white',
-      lwd = .01,
-      aes(
-        fill = pt14.p.class
-      )
-    ) +
-    scale_fill_manual(
-      values  = c( '[0.00;0.10)'='#fee0d2', '[0.10;0.20)'='#fcbba1', '[0.20;0.30)'='#fc9272', 
-                   '[0.30;0.40)'='#fb6a4a', '[0.40;0.50)'='#ef3b2c', '[0.50;0.60)'='#cb181d', 
-                   '[0.60;0.80)'='#a50f15', '[0.80;0.99)'='#67000d' ),
-      name    = ''
-    ) +
-    geom_sf( 
-      data  = stateMapDat,
-      color = 'black',
-      lwd   = .50,
-      fill  = NA
-    ) +
-    theme_bw() +
-    theme(
-      plot.title   = element_text( hjust = 0, size = 12 ),
-      plot.caption = element_text( hjust = 1, size = 10 ),
-      legend.position = 'none'
-    )
-  
-  pt18.map <- 
-    ggplot( ) +
-    labs(
-      title   = '% de votos válidos no PT - Brasil, 2018',
-      caption = 'IPEADATA'
-    ) +
-    geom_sf( 
-      data = map.dat,
-      color = 'white',
-      lwd = .01,
-      aes(
-        fill = pt18.p.class
-      )
-    ) +
-    scale_fill_manual(
-      values  = c( '[0.00;0.10)'='#fee0d2', '[0.10;0.20)'='#fcbba1', '[0.20;0.30)'='#fc9272', 
-                   '[0.30;0.40)'='#fb6a4a', '[0.40;0.50)'='#ef3b2c', '[0.50;0.60)'='#cb181d', 
-                   '[0.60;0.80)'='#a50f15', '[0.80;0.99)'='#67000d' ),
-      name    = ''
-    ) +
-    geom_sf( 
-      data  = stateMapDat,
-      color = 'black',
-      lwd   = .50,
-      fill  = NA
-    ) +
-    theme_bw() +
-    theme(
-      plot.title   = element_text( hjust = 0, size = 12 ),
-      plot.caption = element_text( hjust = 1, size = 10 ),
-      legend.position = 'none'
-    )
-  
   ptall.map <- 
    ggplot( ) +
     labs(
@@ -390,9 +289,9 @@
       nrow = 1
       ) +
     scale_fill_manual(
-      values  = c( '[0.00;0.10)'='#fee0d2', '[0.10;0.20)'='#fcbba1', '[0.20;0.30)'='#fc9272', 
-                   '[0.30;0.40)'='#fb6a4a', '[0.40;0.50)'='#ef3b2c', '[0.50;0.60)'='#cb181d', 
-                   '[0.60;0.80)'='#a50f15', '[0.80;0.99)'='#67000d' ),
+      values  = c( '[0.00;0.15)'='#2166ac', '[0.15;0.30)'='#67a9cf', 
+                   '[0.30;0.45)'='#d1e5f0', '[0.45;0.60)'='#fddbc7', 
+                   '[0.60;0.80)'='#ef8a62', '[0.80;0.99)'='#b2182b' ),
       name    = ''
     ) +
     geom_sf( 
@@ -666,7 +565,61 @@
     )
   
   ggsave( 'OUTPUTS/nulos_vs_tft.png', width = 8, height = 4 )
+  
+  # 6.3 Vote Nulos and TFT
+  nulos.tfr <- 
+    ggplot( 
+      data = datVote.plot[ vote == 'Nulos' ]
+    ) +
+    labs(
+      title    = 'Votos Nulos em Primeiro Turno vs Escolaridade',
+      subtitle = 'Microrregiões - Brasil, 2010 e Eleições 2010, 2014 e 2018',
+      caption  = 'Fonte: IBGE, Censo Demográfico 2010 e IPEADATA' 
+    ) +
+    geom_point(
+      aes( 
+        y = prop,
+        x = educSecd.fem
+      ),
+      color = 'black',
+      size  = 0.75
+    ) +
+    geom_smooth(
+      aes( 
+        y = prop,
+        x = educSecd.fem
+      ),
+      color = 'steelblue3',
+      span  = 0.85,
+      se    = F
+    ) +
+    scale_x_continuous( 
+      breaks = seq( 0.05, 0.45, 0.05 ),
+      labels = paste0( seq( 5, 45, 5 ) ),
+      name   = '% Mulheres com ensino médio completo 2010'
+    ) +
+    scale_y_continuous( 
+      breaks = seq( 0, 0.15, 0.025 ),
+      labels = paste0( seq( 0, 15, 2.5 ) ),
+      name   = '% votos Nulos - Primeiro Turno'
+    ) +
+    facet_wrap( 
+      ~ year,
+      nrow = 1
+    ) +
+    theme_bw() +
+    theme(
+      plot.title   = element_text( hjust = 0, size = 14 ),
+      plot.subtitle = element_text( hjust = 0, size = 13 ),
+      plot.caption = element_text( hjust = 1, size = 12 ),
+      legend.text  = element_text( size = 12 ),
+      strip.text   = element_text( size = 13 )
+    )
+  
+  ggsave( 'OUTPUTS/nulos_vs_educ.png', width = 8, height = 4 )
+  
+  
+  
 ####################################################################
-    microMap.centroids <-
-    st_centroid( microMapDat )
+
   
