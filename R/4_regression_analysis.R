@@ -31,6 +31,16 @@ datVote <-
     dec = ','
   )
 
+datcomp <- 
+  fread( 
+    'DATA/dados_completo.csv',
+    dec = ','
+  )
+
+datcomp$renda %>% as.numeric %>% summary
+datVote$meanInc %>% as.numeric %>% summary
+
+?fread
 head( datVote )
 
 # 2.2 microrregions shape files
@@ -45,6 +55,7 @@ stateMapDat <-
 microMap.centroids <-
   fread( 'DATA/coord_centroids.csv' )
 
+
 datVote <- 
   merge(
     datVote,
@@ -53,7 +64,34 @@ datVote <-
     by.y = 'CODMICRO'
   )
 
-#2.5 merge map and vote data
+# 2.5 compute Totals and % of vote and scale pop for vote data
+datVote[ ,
+         `:=`(
+           total10 = brancos10 + nulos10 + uteis10,
+           total14 = brancos14 + nulos14 + uteis14,
+           total18 = brancos18 + nulos18 + uteis18
+         )
+         ]
+
+datVote[ ,
+         `:=`(
+           brancos10.p = brancos10 / total10,
+           nulos10.p   = nulos10 / total10,
+           pt10.p      = pt10 / uteis10,
+           brancos14.p = brancos14 / total14,
+           nulos14.p   = nulos14 / total14,
+           pt14.p      = pt14 / uteis14,
+           brancos18.p = brancos18 / total18,
+           nulos18.p   = nulos18 / total18,
+           pt18.p      = pt18 / uteis18,
+           psl18.p    = psl18 / uteis18
+         )]
+
+
+datVote$pop.scale = datVote$pop/1000000
+map.dat$pop.scale = map.dat$pop/1000000
+
+#2.6 merge map and vote data
 map.dat <- 
   merge(
     microMapDat,
@@ -77,42 +115,35 @@ listw.map <-
     )
 ####################################################################
 
-### 3. Compute vote % #---------------------------------------------
-
-# 3.1 Totals
-datVote[ ,
-         `:=`(
-           total10 = brancos10 + nulos10 + uteis10,
-           total14 = brancos14 + nulos14 + uteis14,
-           total18 = brancos18 + nulos18 + uteis18
-         )
-         ]
-
-# 3.2 Compute vote %
-datVote[ ,
-         `:=`(
-           brancos10.p = brancos10 / total10,
-           nulos10.p   = nulos10 / total10,
-           pt10.p      = pt10 / uteis10,
-           brancos14.p = brancos14 / total14,
-           nulos14.p   = nulos14 / total14,
-           pt14.p      = pt14 / uteis14,
-           brancos18.p = brancos18 / total18,
-           nulos18.p   = nulos18 / total18,
-           pt18.p      = pt18 / uteis18
-         )]
-####################################################################
-
 ### 4. Check correlation and vif tests #---------------------------
 
-datVote$pop.scale = datVote$pop/1000000
-map.dat$pop.scale = map.dat$pop/1000000
+# 4.1 Vif tests
 
+vif(
+  lm(
+    TFR ~ 
+      pt10.p + brancos10.p + nulos10.p + log( meanInc ) + educSecd.fem + religPent + x + y,
+    weights = pop.scale,
+    data = datVote
+  )
+)
+
+vif(
+  lm(
+    pt10.p ~ 
+      TFR + brancos10.p + nulos10.p + log( meanInc ) + educSecd.fem + religPent + depRatio.elder + sexRatio + x + y,
+    weights = pop.scale,
+    data = datVote
+  )
+)
+
+
+# 4.2 LM tests
 summary(
   lm.LMtests(
     lm(
-      TFR ~ pt10 + brancos10 + nulos10 + pop.scale + propW25_34 + log( meanInc ) + educSecd.fem +
-        religPent + x + y,
+      pt10.p ~ 
+        TFR + brancos10.p + nulos10.p + log( meanInc ) + educSecd.fem + religPent + depRatio.elder + sexRatio + x + y,
       weights = pop.scale,
       data = map.dat
       ),
@@ -122,34 +153,116 @@ summary(
     )
   )
 
-## Modelos para o PT em 2010
-## general controls
-summary(lm(
-  TFR ~ pt10 + brancos10 + nulos10 + propW25_34 + log( meanInc ) + educSecd.fem +
-    religPent + x + y,
-  weights = pop.scale,
-  data = map.dat
-))
+# 4.3 Models - 1. no spatial, 2. spatial large scale, 3. spatial small scale
 
-summary(lm(
-  pt10.p ~ TFR + brancos10.p + nulos10.p + pop.scale + propW25_34 + log( meanInc ) + educSecd.fem +
-    religPent + x + y,
-  data = datVote
+mod1a.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent ,
+    weights = pop.scale,
+    data    = map.dat
+    )
+
+mod1b.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent,
+    weights = pop.scale,
+    data    = map.dat
   )
+
+mod1c.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent + qAdult.mal,
+    weights = pop.scale,
+    data    = map.dat
   )
 
-summary(lm(
-  pt10.p ~ TFR + brancos10.p + nulos10.p  + propW25_34 + log( meanInc ) + educSecd.fem +
-    religPent + x + y,
-  weights = pop.scale,
-  data = datVote
-)
-)
+AIC(mod1a.psl)
+AIC(mod1b.psl)
+AIC(mod1c.psl)
 
+mod2a.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent + x + y ,
+    weights = pop.scale,
+    data    = map.dat
+  )
+
+mod2b.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent + x + y ,
+    weights = pop.scale,
+    data    = map.dat
+  )
+
+mod2c.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent + 
+      qAdult.mal + x + y ,
+    weights = pop.scale,
+    data    = map.dat
+  )
+
+mod2d.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + pbf + educSecd.fem + religPent + x + y ,
+    weights = pop.scale,
+    data    = map.dat
+  )
+
+mod2e.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + pbf + educSecd.fem + sexRatio + depRatio.elder + religPent + x + y ,
+    weights = pop.scale,
+    data    = map.dat
+  )
+
+mod2f.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + pbf + educSecd.fem + sexRatio + depRatio.elder + religPent + 
+      qAdult.mal + x + y ,
+    weights = pop.scale,
+    data    = map.dat
+  )
+
+AIC(mod2a.psl)
+vif(mod2b.psl)
+summary(mod2c.psl)
+AIC(mod2d.psl)
+vif(mod2e.psl)
+summary(mod2f.psl)
+
+
+vif(
+  lm(
+    psl18.p ~ 
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder  + religPent + x + y ,
+    weights = pop.scale,
+    data    = map.dat
+  ))
+# spatial trend
+summary(lm(TFT~psl18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
 
 ## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(pt10.p)~brancos10.p + nulos10.p +pop.scale + propW25_34 + log( meanInc ) + educSecd.fem +
-                     religPent + x + y,listw=listw.map, zero.policy=TRUE, data=datVote))  #Fitting a SAR-Model#
+summary(errorsarlm(as.vector(TFT)~psl18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=mapa.1))  #Fitting a SAR-Model#
+
+summary(
+  errorsarlm(
+    as.vector(pt10.p) ~
+      TFR + log( meanInc ) + educSecd.fem + religPent  + sexRatio + x + y,
+    listw       = listw.map, 
+    zero.policy = TRUE, 
+    data        = map.dat
+    )
+  )  #Fitting a SAR-Model#
 
 
 summary(errorsarlm(as.vector(pt10.p)~brancos10.p + nulos10.p + propW25_34 + log( meanInc ) + educSecd.fem +
@@ -157,25 +270,6 @@ summary(errorsarlm(as.vector(pt10.p)~brancos10.p + nulos10.p + propW25_34 + log(
 
 
 
-
-## Teste de dependencia espacial dos modelos ###  
-## Resposta TFT
-summary(lm.LMtests(lm(TFT~psl18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1),listw.map, test=c("LMerr", "LMlag","RLMerr", "RLMlag", "SARMA"),zero.policy=TRUE))
-
-summary(lm.LMtests(lm(TFT~pt18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1),listw.map, test=c("LMerr", "LMlag","RLMerr", "RLMlag", "SARMA"),zero.policy=TRUE))
-
-summary(lm.LMtests(lm(TFT~pt14+brancos14+nulos14+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1),listw.map, test=c("LMerr", "LMlag","RLMerr", "RLMlag", "SARMA"),zero.policy=TRUE))
-
-summary(lm.LMtests(lm(TFT~pt10+brancos10+nulos10+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1),listw.map, test=c("LMerr", "LMlag","RLMerr", "RLMlag", "SARMA"),zero.policy=TRUE))
-
-### Nesses modelos, dependencia espacial no erro em todos os modelos.
-
-## Resposta votos
-summary(lm.LMtests(lm(psl18~TFT+brancos18+nulos18+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1),listw.map, test=c("LMerr", "LMlag","RLMerr", "RLMlag", "SARMA"),zero.policy=TRUE))
-
-summary(lm.LMtests(lm(pt18~TFT+brancos18+nulos18+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1),listw.map, test=c("LMerr", "LMlag","RLMerr", "RLMlag", "SARMA"),zero.policy=TRUE))
-
-## No error em todos os casos. Apesar de significante em alguns casos para lag, optaremos por error model, dado que valores de p menores em todos os cen?rios.
 
 ################################################
 ######### Constru??o dos modelos ###############
