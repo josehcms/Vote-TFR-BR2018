@@ -2,7 +2,7 @@
 ### Project: TFR and Vote in Brazilian 2018 elections
 ### Regression analysis modelling
 ### Author: Jose H C Monteiro da Silva
-### Last update: 2020-03-18
+### Last update: 2020-03-19
 ##################################################################
 
 ### 1. Housekeeping and package loading #-------------------------
@@ -31,16 +31,6 @@ datVote <-
     dec = ','
   )
 
-datcomp <- 
-  fread( 
-    'DATA/dados_completo.csv',
-    dec = ','
-  )
-
-datcomp$renda %>% as.numeric %>% summary
-datVote$meanInc %>% as.numeric %>% summary
-
-?fread
 head( datVote )
 
 # 2.2 microrregions shape files
@@ -155,14 +145,43 @@ summary(
 
 # 4.3 Models - 1. no spatial, 2. spatial large scale, 3. spatial small scale
 
-mod1a.psl <- 
+
+x11()
+par(mfrow=c(1,2))
+mod1a.psl1 <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent ,
+    weights = 1/pop.scale,
+    data    = map.dat
+    )
+
+plot(y=residuals(mod1a.psl1),x=log(datVote$pop.scale))
+lines(lowess(x=log(datVote$pop.scale),y=residuals(mod1a.psl1)), col='red')
+
+residuals(mod1a.psl1) %>% length
+mod1a.psl2 <- 
   lm(
     psl18.p ~
       TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent ,
     weights = pop.scale,
     data    = map.dat
-    )
+  )
 
+plot(y=residuals(mod1a.psl2),x=log(datVote$pop.scale))
+lines(lowess(x=log(datVote$pop.scale),y=residuals(mod1a.psl2)), col='blue')
+
+
+AIC(mod1a.psl1,mod1a.psl2)
+
+mod1a.psl <- 
+  lm(
+    psl18.p ~
+      TFR + brancos18.p + nulos18.p + pop.scale + log( meanInc ) + educSecd.fem + religPent ,
+    data    = map.dat
+  )
+#anova(mod1a.psl)
+summary(mod1a.psl)
 mod1b.psl <- 
   lm(
     psl18.p ~
@@ -170,6 +189,7 @@ mod1b.psl <-
     weights = pop.scale,
     data    = map.dat
   )
+summary(mod1a.psl)
 
 mod1c.psl <- 
   lm(
@@ -208,32 +228,64 @@ mod2c.psl <-
     data    = map.dat
   )
 
-mod2d.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + pbf + educSecd.fem + religPent + x + y ,
+mod3a.psl <- 
+  errorsarlm(
+    as.vector( psl18.p ) ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent + x + y ,
     weights = pop.scale,
-    data    = map.dat
+    listw       = listw.map, 
+    zero.policy = TRUE, 
+    data        = map.dat
+  )
+    
+
+mod3b.psl <- 
+  errorsarlm(
+    as.vector( psl18.p ) ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent + x + y ,
+    weights = pop.scale,
+    listw       = listw.map, 
+    zero.policy = TRUE, 
+    data        = map.dat
   )
 
-mod2e.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + pbf + educSecd.fem + sexRatio + depRatio.elder + religPent + x + y ,
-    weights = pop.scale,
-    data    = map.dat
-  )
-
-mod2f.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + pbf + educSecd.fem + sexRatio + depRatio.elder + religPent + 
+mod3c.psl <- 
+  errorsarlm(
+    as.vector( psl18.p ) ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent +
       qAdult.mal + x + y ,
     weights = pop.scale,
-    data    = map.dat
+    listw       = listw.map, 
+    zero.policy = TRUE, 
+    data        = map.dat
   )
 
-AIC(mod2a.psl)
+mod3c.pt18 <- 
+  errorsarlm(
+    as.vector( pt18.p ) ~
+      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent +
+      qAdult.mal + x + y ,
+    weights = pop.scale,
+    listw       = listw.map, 
+    zero.policy = TRUE, 
+    data        = map.dat
+  )
+
+mod3c.pt10 <- 
+  errorsarlm(
+    as.vector( pt10.p ) ~
+      TFR + brancos10.p + nulos10.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent +
+      qAdult.mal + x + y ,
+    weights = pop.scale,
+    listw       = listw.map, 
+    zero.policy = TRUE, 
+    data        = map.dat
+  )
+
+summary(mod3c.pt10)
+summary(mod3c.pt18)
+
+summary(mod3c.psl)
 vif(mod2b.psl)
 summary(mod2c.psl)
 AIC(mod2d.psl)
