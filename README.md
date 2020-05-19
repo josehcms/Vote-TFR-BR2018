@@ -30,7 +30,8 @@ dat <-
 * ```TFR```: taxa de fecundidade total computada a partir da fórmula ``` ( 10.65 - 12.55 * propW25_34 ) * child0_4 / women15_49 ``` proposta por [Hauer & Schmertmann (2020)](https://link.springer.com/article/10.1007/s13524-019-00842-x) para estimação de *extended total fertility rates*
 * ```depRatio.youth```: razão de dependência jovem (``` pop0_14 / pop15_64 ```)
 * ```depRatio.elder```: razão de dependência idosa (``` pop65+ / pop15_64 ```)
-* ```sexRatio```: razão de sexo (``` pop.masculina / pop.feminina```)
+* ```sexRatio```: razão de sexo da população obrigada a votar (``` pop.masculina / pop.feminina```)
+* ```womenHead```: proporção de domicílios chefiados por mulheres 
 * ```religPent```: proporção de pessoas (18 anos ou mais) de religião de origem Pentecostal (censo 2010)
 * ```religCat```: proporção de pessoas (18 anos ou mais) de religião de origem Católica (censo 2010)
 * ```religNone```: proporção de pessoas (18 anos ou mais) sem religião (censo 2010)

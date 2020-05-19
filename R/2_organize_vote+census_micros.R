@@ -24,7 +24,6 @@ datCensus <-
 datTSE <- 
   fread( "DATA/votes_micro.csv" )
 
-
 dicReg <- 
   c(
     '1' = 'Norte',
@@ -83,6 +82,8 @@ datComplete <-
        e40.fem     = e40_f,
        e60.mal     = e60_m,
        e60.fem     = e60_f,
+       brancos02, nulos02, pt02, psdb02, uteis02,
+       brancos06, nulos06, pt06, psdb06, uteis06,
        brancos10, nulos10, pt10, uteis10,
        brancos14, nulos14, pt14, uteis14,
        brancos18, nulos18, pt18, novo18, mdb18, psl18, uteis18
@@ -95,7 +96,7 @@ datComplete <-
 
 write_csv2(
   datComplete,
-  'DATA/demographic_elections_10_14_18_data.csv'
+  'DATA/demographic_elections_02_06_10_14_18_data.csv'
 )
 
 ##################################################################

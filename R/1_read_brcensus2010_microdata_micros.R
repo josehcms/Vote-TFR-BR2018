@@ -56,6 +56,7 @@ dicDwelling2010 <-
 # 2.3 Data dictionary person
 ## Weight       - V0010
 ## Sex          - V0601
+## Head of hhwd - V0502
 ## Age          - V6036
 ## UF (State)   - V0001
 ## Municipality - V0002
@@ -66,7 +67,7 @@ dicDwelling2010 <-
 ## Control      - V0300
 
 filterPerson <- 
-  c( 'V0300', 'V0001', 'V0002', 'V1003', 'V0010','V0601','V6036', 'V6400', 'V6121', 'V0657' )
+  c( 'V0300', 'V0001', 'V0002', 'V1003', 'V0010','V0601','V6036', 'V6400', 'V6121', 'V0657', 'V0502' )
 
 var2010Person <-
   filter( 
@@ -188,7 +189,8 @@ dtPerson[,
            educ     = as.numeric( V6400 ),
            MICROCODE = paste0( V0001, V1003 ),
            uf        = V0001,
-           pbf       = ifelse( V0657 == 1, 1, 0 )
+           pbf       = ifelse( V0657 == 1, 1, 0 ),
+           head      = ifelse( as.numeric(V0502) == 1, 1, 0 )
            )
          ]
 
@@ -249,7 +251,7 @@ dtPop <-
       POP            = sum( weight ),
       depRatio.youth = sum( weight[ age < 15 ] ) / sum( weight[ age > 14 & age < 65 ] ),
       depRatio.elder = sum( weight[ age > 64 ] ) / sum( weight[ age > 14 & age < 65 ] ),
-      sexRatio       = sum( weight[ sex == 1 ] ) / sum( weight[ sex == 2 ] )
+      sexRatio       = sum( weight[ sex == 1 & age > 17 & age < 70 ] ) / sum( weight[ sex == 2 & age > 17 & age < 70 ] )
     ),
     .( MICROCODE )
     ]
@@ -276,8 +278,15 @@ dtPBF <-
      .( MICROCODE )
      ]
   
-
-# 4.8 Merge data 
+# 4.8 Women head of household
+dtWomenHead <- 
+  dtPerson[ head == 1, 
+            list(
+              Whead = sum( weight[ sex == 2 ] ) / sum( weight )
+            ),
+            .( MICROCODE )
+            ]
+# 4.9 Merge data 
 dtPopPyrTFR <- 
   merge(
     dtWomen,
@@ -310,6 +319,13 @@ dtPopPyrTFR <-
   merge(
     dtPopPyrTFR,
     dtPBF,
+    by = 'MICROCODE'
+  )
+
+dtPopPyrTFR <- 
+  merge(
+    dtPopPyrTFR,
+    dtWomenHead,
     by = 'MICROCODE'
   )
 
@@ -382,6 +398,7 @@ datMicro <-
                 depRatio.youth,
                 depRatio.elder,
                 sexRatio,
+                womenHead = Whead,
                 religPent,
                 religCat,
                 religNone,
