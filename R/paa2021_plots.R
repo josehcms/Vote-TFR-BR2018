@@ -71,13 +71,26 @@ datVote[ ,
 
 ### 4. Plot 1: vote pt vs TFT #--------------------------------------
 
+tfr_vote_plot <- 
+  datVote %>%
+  melt( 
+    measure.vars  = c( 'psl18.p', 'pt18.p' ),
+    id.vars       = c( 'microcode', 'regname', 'TFR' ),
+    value.name    = 'vote_share',
+    variable.name = 'party' ) %>%
+  .[, party := ifelse( party == 'psl18.p', 'PSL', 'PT' ) ]
+
 ggfig1 <- 
-  ggplot( datVote ) +
-  geom_point( aes( x = pt18.p, y = TFR, 
+  ggplot( tfr_vote_plot ) +
+  geom_hline( yintercept = 2.1, color = 'red', size = 0.25, 
+              linetype = 'longdash' ) +
+  geom_point( aes( x = vote_share, y = TFR, 
                    color = regname, shape = regname ), 
               size = 2.1 ) +
-  geom_smooth( aes( x = pt18.p, y = TFR ), 
-               color = 'tomato3' ) +
+  geom_smooth( aes( x = vote_share, y = TFR ), 
+               color = 'tomato3',
+               method = 'lm' ) +
+
   scale_color_manual( values = c( 'Centro-Oeste' = 'black',
                                   'Nordeste'     = 'black',
                                   'Norte'        = 'steelblue4',
@@ -102,12 +115,13 @@ ggfig1 <-
                       name = '') +
   scale_x_continuous( limits = c( 0.0, 0.80 ),
                       breaks = seq( 0, 1, 0.10 ),
-                      name = 'PT vote share') +
+                      name = 'Vote Share') +
   scale_y_continuous( limits = c( 1, 5.25 ),
                       breaks = seq( 0, 6, 0.50 ),
                       name = 'Total Fertility Rates (2010)' ) + 
   labs( 
     caption = 'Sources:\nBrazilian National Census 2010, IBGE (2010)\nBrazilian 2018 General Election Results, Superior Electoral Court (2018)' ) +
+  facet_wrap( ~ party, nrow = 1 ) +
   theme_classic( ) +
   theme(
     panel.grid.major = element_line( color = 'gray75', size = 0.25, 
@@ -117,10 +131,12 @@ ggfig1 <-
     plot.caption = element_text( size = 11, color = 'black', hjust = 0 ),
     legend.position = 'top',
     legend.text = element_text( color = 'black', size = 12 ),
-    legend.title = element_text( color = 'black', size = 13 )
+    legend.title = element_text( color = 'black', size = 13 ),
+    strip.background = element_rect( fill = NA, color = 'black' ),
+    strip.text = element_text( color = 'black', size = 15 ) 
     )
 
-ggsave( filename = 'OUTPUTS/paa2021_fig1.png', height = 5, width = 6,
+ggsave( filename = 'OUTPUTS/paa2021_fig1.png', height = 6, width = 9,
         plot = ggfig1 )
 ####################################################################
 
