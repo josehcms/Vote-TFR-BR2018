@@ -20,6 +20,7 @@ require(gridExtra)
 require(spdep)
 require(car)
 
+options( scipen = 999 )
 ##################################################################
 
 ### 2. Read data #------------------------------------------------
@@ -105,311 +106,107 @@ listw.map <-
     )
 ####################################################################
 
-### 4. Check correlation and vif tests #---------------------------
+### 3. Check correlation and vif tests #---------------------------
 
-# 4.1 Vif tests
-
-vif(
-  lm(
-    TFR ~ 
-      pt10.p + brancos10.p + nulos10.p + log( meanInc ) + educSecd.fem + religPent + x + y,
-    weights = pop.scale,
-    data = datVote
-  )
-)
-
-vif(
-  lm(
-    pt10.p ~ 
-      TFR + brancos10.p + nulos10.p + log( meanInc ) + educSecd.fem + religPent + depRatio.elder + sexRatio + x + y,
-    weights = pop.scale,
-    data = datVote
-  )
-)
-
-
-# 4.2 LM tests
-summary(
-  lm.LMtests(
-    lm(
-      pt10.p ~ 
-        TFR + brancos10.p + nulos10.p + log( meanInc ) + educSecd.fem + religPent + depRatio.elder + sexRatio + x + y,
-      weights = pop.scale,
-      data = map.dat
-      ),
-    listw.map, 
-    test = c( "LMerr", "LMlag", "RLMerr", "RLMlag", "SARMA" ),
-    zero.policy = TRUE
-    )
-  )
-
-# 4.3 Models - 1. no spatial, 2. spatial large scale, 3. spatial small scale
-
-
-x11()
-par(mfrow=c(1,2))
-mod1a.psl1 <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent ,
-    weights = 1/pop.scale,
-    data    = map.dat
-    )
-
-plot(y=residuals(mod1a.psl1),x=log(datVote$pop.scale))
-lines(lowess(x=log(datVote$pop.scale),y=residuals(mod1a.psl1)), col='red')
-
-residuals(mod1a.psl1) %>% length
-mod1a.psl2 <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent ,
-    weights = pop.scale,
-    data    = map.dat
-  )
-
-plot(y=residuals(mod1a.psl2),x=log(datVote$pop.scale))
-lines(lowess(x=log(datVote$pop.scale),y=residuals(mod1a.psl2)), col='blue')
-
-
-AIC(mod1a.psl1,mod1a.psl2)
-
-mod1a.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + pop.scale + log( meanInc ) + educSecd.fem + religPent ,
-    data    = map.dat
-  )
-#anova(mod1a.psl)
-summary(mod1a.psl)
-mod1b.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent,
-    weights = pop.scale,
-    data    = map.dat
-  )
-summary(mod1a.psl)
-
-mod1c.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent + qAdult.mal,
-    weights = pop.scale,
-    data    = map.dat
-  )
-
-AIC(mod1a.psl)
-AIC(mod1b.psl)
-AIC(mod1c.psl)
-
-mod2a.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent + x + y ,
-    weights = pop.scale,
-    data    = map.dat
-  )
-
-mod2b.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent + x + y ,
-    weights = pop.scale,
-    data    = map.dat
-  )
-
-mod2c.psl <- 
-  lm(
-    psl18.p ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent + 
-      qAdult.mal + x + y ,
-    weights = pop.scale,
-    data    = map.dat
-  )
-
-mod3a.psl <- 
-  errorsarlm(
-    as.vector( psl18.p ) ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + religPent + x + y ,
-    weights = pop.scale,
-    listw       = listw.map, 
-    zero.policy = TRUE, 
-    data        = map.dat
-  )
-    
-
-mod3b.psl <- 
-  errorsarlm(
-    as.vector( psl18.p ) ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent + x + y ,
-    weights = pop.scale,
-    listw       = listw.map, 
-    zero.policy = TRUE, 
-    data        = map.dat
-  )
-
-mod3c.psl <- 
-  errorsarlm(
-    as.vector( psl18.p ) ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent +
-      qAdult.mal + x + y ,
-    weights = pop.scale,
-    listw       = listw.map, 
-    zero.policy = TRUE, 
-    data        = map.dat
-  )
-
-mod3c.pt18 <- 
-  errorsarlm(
-    as.vector( pt18.p ) ~
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent +
-      qAdult.mal + x + y ,
-    weights = pop.scale,
-    listw       = listw.map, 
-    zero.policy = TRUE, 
-    data        = map.dat
-  )
-
-mod3c.pt10 <- 
-  errorsarlm(
-    as.vector( pt10.p ) ~
-      TFR + brancos10.p + nulos10.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder + religPent +
-      qAdult.mal + x + y ,
-    weights = pop.scale,
-    listw       = listw.map, 
-    zero.policy = TRUE, 
-    data        = map.dat
-  )
-
-summary(mod3c.pt10)
-summary(mod3c.pt18)
-
-summary(mod3c.psl)
-vif(mod2b.psl)
-summary(mod2c.psl)
-AIC(mod2d.psl)
-vif(mod2e.psl)
-summary(mod2f.psl)
-
+# 3.1 Vif tests
 
 vif(
   lm(
     psl18.p ~ 
-      TFR + brancos18.p + nulos18.p + log( meanInc ) + educSecd.fem + sexRatio + depRatio.elder  + religPent + x + y ,
-    weights = pop.scale,
-    data    = map.dat
-  ))
-# spatial trend
-summary(lm(TFT~psl18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
+      TFR + brancos18.p + nulos18.p + 
+      pop.scale + pbf + 
+      educSecd.fem + religPent + depRatio.elder + 
+      x + y,
+    data = map.dat
+  )
+)
 
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(TFT)~psl18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=mapa.1))  #Fitting a SAR-Model#
+# 3.2 - 1) PSL ~ TRF + NULOS + BRANCOS + POP.SCALE
+mod1 <- 
+  lm(
+    TFR ~ 
+      psl18.p + brancos18.p + nulos18.p + pop.scale,
+    data = map.dat
+  )
+
+plot( mod1 )
+
+resmod1 <- 
+  summary( mod1 )
+
+resmod1$coefficients %>% as.data.table %>%
+  .[ , .( 
+    Var      = row.names( resmod1$coefficients ),
+    Estimate = Estimate %>% round( 5 ), 
+    Pval     = `Pr(>|t|)` %>% round( 5 ) ) ]
+
+resmod1$r.squared %>% round( 5 )
+
+# 3.3 - 2) PSL ~ (1) + pbf + educSecd.fem + religPent + depRatio.elder
+mod2 <- 
+  lm(
+    TFR  ~ 
+      psl18.p + brancos18.p + nulos18.p + pop.scale +
+      pbf + educSecd.fem + religPent + depRatio.elder,
+    data = map.dat
+  )
+
+plot( mod2 )
+
+resmod2 <- 
+  summary( mod2 )
+
+resmod2$coefficients %>% as.data.table %>%
+  .[ , .( 
+    Var      = row.names( resmod2$coefficients ),
+    Estimate = Estimate %>% round( 5 ), 
+    Pval     = `Pr(>|t|)` %>% round( 5 ) ) ]
+
+resmod2$r.squared %>% round( 5 )
+
+
+# 3.4 - 3) PSL ~ (2) + spatial
 
 summary(
+  lm.LMtests(
+    lm(
+      psl18.p ~ 
+        TFR + brancos18.p + nulos18.p + 
+        pop.scale + pbf +  educSecd.fem + religPent + depRatio.elder +
+        x + y,
+      data = map.dat
+    ),
+    listw.map, 
+    test = c( "LMerr", "LMlag", "RLMerr", "RLMlag", "SARMA" ),
+    zero.policy = TRUE
+  )
+)
+
+mod3 <- 
   errorsarlm(
-    as.vector(pt10.p) ~
-      TFR + log( meanInc ) + educSecd.fem + religPent  + sexRatio + x + y,
+    as.vector( TFR ) ~
+      psl18.p+ brancos18.p + nulos18.p + pop.scale + 
+      pbf + educSecd.fem + religPent + depRatio.elder +
+      x + y ,
     listw       = listw.map, 
     zero.policy = TRUE, 
     data        = map.dat
-    )
-  )  #Fitting a SAR-Model#
+  )
+
+plot( mod3 )
+
+resmod3 <- 
+  summary( mod3 )
+
+resmod3$Coef %>% as.data.table %>%
+  .[ , .( 
+    Var      = row.names( resmod3$Coef ),
+    Estimate = Estimate %>% round( 5 ), 
+    Pval     = `Pr(>|z|)` %>% round( 5 ) ) ]
+  
 
 
-summary(errorsarlm(as.vector(pt10.p)~brancos10.p + nulos10.p + propW25_34 + log( meanInc ) + educSecd.fem +
-                     religPent + x + y,listw=listw.map, zero.policy=TRUE, weights = pop.scale, data=datVote))  #Fitting a SAR-Model#
+####################################################################
 
-
-
-
-################################################
-######### Constru??o dos modelos ###############
-################################################
-
-# mod.1 = no control for spatial trend
-# mod.2 = control for spatial trend, large scale
-# mod.3 = control for spatial autocorrelation, small scale
-
-## Modelos para o PSL
-## general controls
-summary(lm(TFT~psl18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent,data=mapa.1))
-
-# spatial trend
-summary(lm(TFT~psl18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
-
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(TFT)~psl18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=mapa.1))  #Fitting a SAR-Model#
-
-## Modelos para o PT em 2018
-## general controls
-summary(lm(TFT~pt18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent,data=mapa.1))
-
-# spatial trend
-summary(lm(TFT~pt18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
-
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(TFT)~pt18+brancos18+nulos18+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=mapa.1))  #Fitting a SAR-Model#
-
-## Modelos para o PT em 2014
-## general controls
-summary(lm(TFT~pt14+brancos14+nulos14+pop.1+propW25_34+log(renda)+edusec+relpent,data=mapa.1))
-
-# spatial trend
-summary(lm(TFT~pt14+brancos14+nulos14+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
-
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(TFT)~pt14+brancos14+nulos14+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=mapa.1))  #Fitting a SAR-Model#
-
-## Modelos para o PT em 2010
-## general controls
-summary(lm(TFT~pt10+brancos10+nulos10+pop.1+propW25_34+log(renda)+edusec+relpent,data=mapa.1))
-
-# spatial trend
-summary(lm(TFT~pt10+brancos10+nulos10+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
-
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(TFT)~pt10+brancos10+nulos10+pop.1+propW25_34+log(renda)+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=mapa.1))  #Fitting a SAR-Model#
-
-### Invertendo a rela??o -- voto como resposta ####
-## Modelos para o PSL
-## general controls
-summary(lm(psl18~brancos18+nulos18+TFT+pop.1+pbf+edusec+relpent,data=mapa.1))
-
-# spatial trend
-summary(lm(psl18~brancos18+nulos18+TFT+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
-
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(psl18)~brancos18+nulos18+TFT+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=dat))  #Fitting a SAR-Model#
-
-## Modelos para o PT em 2018
-## general controls
-summary(lm(pt18~brancos18+nulos18+TFT+pop.1+pbf+edusec+relpent,data=mapa.1))
-
-# spatial trend
-summary(lm(pt18~brancos18+nulos18+TFT+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
-
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(pt18)~brancos18+nulos18+TFT+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=dat))  #Fitting a SAR-Model#
-
-## Modelos para o PT em 2014
-## general controls
-summary(lm(pt14~brancos14+nulos14+TFT+pop.1+pbf+edusec+relpent,data=mapa.1))
-
-# spatial trend
-summary(lm(pt14~brancos14+nulos14+TFT+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
-
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(pt14)~brancos14+nulos14+TFT+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=dat))  #Fitting a SAR-Model#
-
-## Modelos para o PT em 2010
-## general controls
-summary(lm(pt10~brancos10+nulos10+TFT+pop.1+pbf+edusec+relpent,data=mapa.1))
-
-# spatial trend
-summary(lm(pt10~brancos10+nulos10+TFT+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],data=mapa.1))
-
-## SAR error model - autocorrelation ##
-summary(errorsarlm(as.vector(pt10)~brancos10+nulos10+TFT+pop.1+pbf+edusec+relpent+coorden[,2]+coorden[,3],listw=listw.map, zero.policy=TRUE, data=dat))  #Fitting a SAR-Model#
 
 
