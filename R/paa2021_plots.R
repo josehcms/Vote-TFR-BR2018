@@ -467,9 +467,11 @@ bicolormap <-
     fill  = NA
   )  +
   scale_y_continuous( breaks = seq( 0, -30, -10 ),
-                      labels = paste0( seq( 0, -30, -10 ) ) ) +
+                      labels = paste0( seq( 0, -30, -10 ) ),
+                      name = '') +
   scale_x_continuous( breaks = seq( -30, -70, -10 ),
-                      labels = paste0( seq( -30, -70, -10 ) ) ) +
+                      labels = paste0( seq( -30, -70, -10 ) ),
+                      name = '') +
   geom_text( data = regLabs,
              aes( x = xval, y = yval, label = reglab ),
              size = 4) +
