@@ -40,6 +40,10 @@ microMapDat <-
 # 2.3 state shape files
 stateMapDat <- 
   read_state(  year = 2010 )
+
+# 2.4 region shape files
+regMapDat <- 
+  read_region(  year = 2010 )
 ####################################################################
 
 ### 3. Compute vote share #-----------------------------------------
@@ -132,7 +136,7 @@ ggfig1 <-
     legend.position = 'top',
     legend.text = element_text( color = 'black', size = 12 ),
     legend.title = element_text( color = 'black', size = 13 ),
-    strip.background = element_rect( fill = NA, color = 'black' ),
+    strip.background = element_rect( fill = 'gray90', color = 'black' ),
     strip.text = element_text( color = 'black', size = 15 ) 
     )
 
@@ -343,6 +347,10 @@ ggfig2a <-
     name    = 'Vote Share\n2018 General Elections\n(1st Round)'
   ) +
   facet_wrap( ~ vote, nrow =  1 ) +
+  scale_y_continuous( breaks = seq( 0, -30, -10 ),
+                      labels = paste0( seq( 0, -30, -10 ) ) ) +
+  scale_x_continuous( breaks = seq( -30, -70, -10 ),
+                      labels = paste0( seq( -30, -70, -10 ) ) ) +
   geom_sf( 
     data  = microMapDat,
     color = 'gray65',
@@ -401,6 +409,10 @@ ggfig2c <-
     lwd   = .50,
     fill  = NA
   )  +
+  scale_y_continuous( breaks = seq( 0, -30, -10 ),
+                      labels = paste0( seq( 0, -30, -10 ) ) ) +
+  scale_x_continuous( breaks = seq( -30, -70, -10 ),
+                      labels = paste0( seq( -30, -70, -10 ) ) ) +
   theme_bw() +
   theme(
     axis.text = element_text( color = 'black', size = 11 ),
@@ -421,6 +433,14 @@ ggsave( filename = 'OUTPUTS/paa2021_fig3.png', width = 6, height = 6,
 require(biscale)
 map.datbisc <- bi_class( map.dat, y = TFR, x = psl18.p,
                          style = 'quantile', dim = 3 )
+
+regLabs <- 
+  data.table(
+    reglab = c( 'North', 'Northeast', 'Midwest', 'Southeast', 'South' ),
+    xval   = c( -57, -41, -53, -45, -51.5 ),
+    yval   = c( -4, -9, -16, -20, -27 )
+  )
+
 bicolormap <- 
   ggplot( ) +
   labs( 
@@ -441,11 +461,18 @@ bicolormap <-
     fill  = NA
   ) +
   geom_sf( 
-    data  = stateMapDat,
+    data  = regMapDat,
     color = 'black',
     lwd   = .50,
     fill  = NA
   )  +
+  scale_y_continuous( breaks = seq( 0, -30, -10 ),
+                      labels = paste0( seq( 0, -30, -10 ) ) ) +
+  scale_x_continuous( breaks = seq( -30, -70, -10 ),
+                      labels = paste0( seq( -30, -70, -10 ) ) ) +
+  geom_text( data = regLabs,
+             aes( x = xval, y = yval, label = reglab ),
+             size = 4) +
   theme_bw() +
   theme(
     axis.text = element_text( color = 'black', size = 11 ),
