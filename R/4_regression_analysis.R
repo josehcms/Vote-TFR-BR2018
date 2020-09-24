@@ -208,5 +208,107 @@ resmod3$Coef %>% as.data.table %>%
 
 ####################################################################
 
+### 4 Test PSL ~ VOTE #---------------------------------------------
+
+# 4.1 Vif tests
+
+vif(
+  lm(
+    psl18.p ~ 
+      TFR + brancos18.p + nulos18.p + 
+      pop.scale + pbf + 
+      educSecd.fem + religPent + depRatio.elder + 
+      x + y,
+    data = map.dat
+  )
+)
+
+# 3.2 - 1) PSL ~ TRF + NULOS + BRANCOS + POP.SCALE
+mod1 <- 
+  lm(
+    psl18.p ~ 
+      TFR + brancos18.p + nulos18.p + pop.scale,
+    data = map.dat
+  )
+
+plot( mod1 )
+
+resmod1 <- 
+  summary( mod1 )
+
+resmod1$coefficients %>% as.data.table %>%
+  .[ , .( 
+    Var      = row.names( resmod1$coefficients ),
+    Estimate = Estimate %>% round( 3 ), 
+    Pval     = `Pr(>|t|)` %>% round( 4 ) ) ]
+
+resmod1$r.squared %>% round( 5 )
+
+# 3.3 - 2) PSL ~ (1) + pbf + educSecd.fem + religPent + depRatio.elder
+mod2 <- 
+  lm(
+    psl18.p  ~ 
+      TFR + brancos18.p + nulos18.p + pop.scale +
+      pbf + educSecd.fem + religPent + depRatio.elder,
+    data = map.dat
+  )
+
+plot( mod2 )
+
+resmod2 <- 
+  summary( mod2 )
+
+resmod2$coefficients %>% as.data.table %>%
+  .[ , .( 
+    Var      = row.names( resmod2$coefficients ),
+    Estimate = Estimate %>% round( 3 ), 
+    Pval     = `Pr(>|t|)` %>% round( 4 ) ) ]
+
+resmod2$r.squared %>% round( 5 )
+
+
+# 3.4 - 3) PSL ~ (2) + spatial
+
+summary(
+  lm.LMtests(
+    lm(
+      psl18.p ~ 
+        TFR + brancos18.p + nulos18.p + 
+        pop.scale + pbf +  educSecd.fem + religPent + depRatio.elder +
+        x + y,
+      data = map.dat
+    ),
+    listw.map, 
+    test = c( "LMerr", "LMlag", "RLMerr", "RLMlag", "SARMA" ),
+    zero.policy = TRUE
+  )
+)
+
+mod3 <- 
+  errorsarlm(
+    as.vector( psl18.p ) ~
+      TFR + brancos18.p + nulos18.p + pop.scale + 
+      pbf + educSecd.fem + religPent + depRatio.elder +
+      x + y ,
+    listw       = listw.map, 
+    zero.policy = TRUE, 
+    data        = map.dat
+  )
+
+plot( mod3 )
+
+resmod3 <- 
+  summary( mod3 )
+
+resmod3$Coef %>% as.data.table %>%
+  .[ , .( 
+    Var      = row.names( resmod3$Coef ),
+    Estimate = Estimate %>% round( 3 ), 
+    Pval     = `Pr(>|z|)` %>% round( 4 ) ) ]
+
+
+
+####################################################################
+
 
 
