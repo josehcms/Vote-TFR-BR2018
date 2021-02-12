@@ -170,8 +170,8 @@ resmod2$r.squared %>% round( 5 )
 summary(
   lm.LMtests(
     lm(
-      psl18.p ~ 
-        TFR + brancos18.p + nulos18.p + 
+      TFR ~ 
+        psl18.p + brancos18.p + nulos18.p + 
         pop.scale + pbf +  educSecd.fem + religPent + depRatio.elder +
         x + y,
       data = map.dat
@@ -185,7 +185,7 @@ summary(
 mod3 <- 
   errorsarlm(
     as.vector( TFR ) ~
-      psl18.p+ brancos18.p + nulos18.p + pop.scale + 
+      psl18.p + brancos18.p + nulos18.p + pop.scale + 
       pbf + educSecd.fem + religPent + depRatio.elder +
       x + y ,
     listw       = listw.map, 
