@@ -2,7 +2,7 @@
 ### Project: TFR and Vote in Brazilian 2018 elections
 ### Supplementary material 2 - merge vote and census data
 ### Author: Jose H C Monteiro da Silva
-### Last update: 2020-03-15
+### Last update: 2021-04-23
 ##################################################################
 
 ### 1. Housekeeping and package loading #-------------------------
@@ -24,6 +24,20 @@ datCensus <-
 datTSE <- 
   fread( "DATA/votes_micro.csv" )
 
+datSINASC <- 
+  merge(
+    readxl::read_xlsx( 'DATA/adolescent_mothers_births.xlsx',
+                       sheet = 'dados_nascimentos_2010' ) %>%
+      setDT %>%
+      .[ , .( microcode = micro, share_adolbirths_2010 = share_2010 / 100 ) ],
+    
+    readxl::read_xlsx( 'DATA/adolescent_mothers_births.xlsx',
+                       sheet = 'dados_nascimentos_2018' ) %>%
+      setDT %>%
+      .[ , .( microcode = micro, share_adolbirths_2018 = share_2018 / 100 ) ],
+    by = 'microcode'
+  )
+  
 dicReg <- 
   c(
     '1' = 'Norte',
@@ -36,6 +50,11 @@ dicReg <-
 ##################################################################
 
 ### 3. Merge data #-----------------------------------------------
+
+datCensus <- 
+  datCensus %>%
+  merge( datSINASC,
+         by = 'microcode' )
 
 datComplete <-
   merge(
