@@ -38,6 +38,11 @@ datSINASC <-
     by = 'microcode'
   )
   
+datElectedSex <- 
+  fread( 'DATA/elected_representatives_sex_micros.csv',
+         dec = ',' ) %>%
+  .[ , .( microcode, share_fem_politics ) ]
+
 dicReg <- 
   c(
     '1' = 'Norte',
@@ -56,6 +61,11 @@ datCensus <-
   merge( datSINASC,
          by = 'microcode' )
 
+datCensus <- 
+  datCensus %>%
+  merge( datElectedSex,
+         by = 'microcode' )
+
 datComplete <-
   merge(
     datCensus,
@@ -71,6 +81,7 @@ datComplete <-
        microcode,
        microname,
        pop,
+       share_fem_politics,
        share_adolbirths_2010,
        share_adolbirths_2018,
        womenHead,

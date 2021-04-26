@@ -56,7 +56,7 @@ datVote[ ,
            psl18.p    = psl18 / uteis18
          )]
 
-
+datVote[ , educSecd_Terc.fem := educSecd.fem + educTerc.fem ]
 datVote$pop.scale = datVote$pop/1000000
 
 summary_dt <-
@@ -146,8 +146,9 @@ vif_test <-
       TFR ~ 
         psl18.p + brancos18.p + nulos18.p + 
         pop.scale + pbf + 
-        educSecd.fem + religPent + depRatio.elder + 
+        educSecd_Terc.fem + religPent + depRatio.elder + 
         womenHead + share_adolbirths_2010 + 
+        share_fem_politics +
         x + y,
       data = map.dat
     )
@@ -166,11 +167,14 @@ write.xlsx(
   append = FALSE
 )
 
-# 3.2 - 1) TFR ~ PSL + NULOS + BRANCOS + POP.SCALE
+# 3.2 - 1) TFR ~ PSL + covs
 mod1 <- 
   lm(
     TFR ~ 
-      psl18.p + brancos18.p + nulos18.p + pop.scale,
+      psl18.p + brancos18.p + nulos18.p + pop.scale +
+      pbf + educSecd_Terc.fem + religPent + depRatio.elder +
+      womenHead + share_adolbirths_2010 +
+      share_fem_politics,
     data = map.dat
   )
 
@@ -189,17 +193,20 @@ res_betas$r2 <- resmod1$r.squared %>% round( 5 )
 write.xlsx(
   res_betas,
   file = 'OUTPUTS/TFR_PSL_Models.xlsx',
-  sheetName = 'model1_betas',
+  sheetName = 'model1_covs_betas',
   row.names = FALSE,
   append = TRUE
 )
 
-# 3.3 - 2) TFR ~ PSL + (1) + pbf + educSecd.fem + religPent + depRatio.elder
+# 3.3 - 2) TFR ~ PSL + covs + x + y
 mod2 <- 
   lm(
-    TFR  ~ 
+    TFR ~ 
       psl18.p + brancos18.p + nulos18.p + pop.scale +
-      pbf + educSecd.fem + religPent + depRatio.elder,
+      pbf + educSecd_Terc.fem + religPent + depRatio.elder +
+      womenHead + share_adolbirths_2010 +
+      share_fem_politics +
+      x + y,
     data = map.dat
   )
 
@@ -207,57 +214,24 @@ resmod2 <-
   summary( mod2 )
 
 res_betas <- 
-  resmod2$coefficients %>% 
-  as.data.table %>%
+  resmod2$coefficients %>% as.data.table %>%
   .[ , .( 
     Var      = row.names( resmod2$coefficients ),
     Estimate = Estimate %>% round( 5 ), 
     Pval     = `Pr(>|t|)` %>% round( 5 ) ) ]
-
 
 res_betas$r2 <- resmod2$r.squared %>% round( 5 )
 
 write.xlsx(
   res_betas,
   file = 'OUTPUTS/TFR_PSL_Models.xlsx',
-  sheetName = 'model2_betas',
+  sheetName = 'model2_xy_betas',
   row.names = FALSE,
   append = TRUE
 )
 
-# 3.4 - 3) TFR ~ PSL + (1) + pbf + educSecd.fem + religPent + depRatio.elder + womenHead + shareadolbirths
-mod3 <- 
-  lm(
-    TFR  ~ 
-      psl18.p + brancos18.p + nulos18.p + pop.scale +
-      pbf + educSecd.fem + religPent + depRatio.elder +
-      womenHead + share_adolbirths_2010,
-    data = map.dat
-  )
 
-resmod3 <- 
-  summary( mod3 )
-
-res_betas <- 
-  resmod3$coefficients %>% 
-  as.data.table %>%
-  .[ , .( 
-    Var      = row.names( resmod3$coefficients ),
-    Estimate = Estimate %>% round( 5 ), 
-    Pval     = `Pr(>|t|)` %>% round( 5 ) ) ]
-
-
-res_betas$r2 <- resmod3$r.squared %>% round( 5 )
-
-write.xlsx(
-  res_betas,
-  file = 'OUTPUTS/TFR_PSL_Models.xlsx',
-  sheetName = 'model3_betas',
-  row.names = FALSE,
-  append = TRUE
-)
-
-# 3.5 - 4) TFR ~ PSL + (2) + spatial
+# 3.5 - 4) TFR ~ PSL + covs + x + y + spatial
 # 
 # summary(
 #   lm.LMtests(
@@ -274,66 +248,37 @@ write.xlsx(
 #   )
 # )
 
-mod4 <- 
+mod3 <- 
   errorsarlm(
     as.vector( TFR ) ~
-      psl18.p + brancos18.p + nulos18.p + pop.scale + 
-      pbf + educSecd.fem + religPent + depRatio.elder +
-      x + y ,
+      psl18.p + brancos18.p + nulos18.p + pop.scale +
+      pbf + educSecd_Terc.fem + religPent + depRatio.elder +
+      womenHead + share_adolbirths_2010 +
+      share_fem_politics +
+      x + y,
     listw       = listw.map, 
     zero.policy = TRUE, 
     data        = map.dat
   )
 
-resmod4 <- 
-  summary( mod4 )
+resmod3 <- 
+  summary( mod3 )
 
 res_betas <- 
-  resmod4$Coef %>% as.data.table %>%
+  resmod3$Coef %>% as.data.table %>%
   .[ , .( 
-    Var      = row.names( resmod4$Coef ),
+    Var      = row.names( resmod3$Coef ),
     Estimate = Estimate %>% round( 5 ), 
     Pval     = `Pr(>|z|)` %>% round( 5 ) ) ]
   
 write.xlsx(
   res_betas,
   file = 'OUTPUTS/TFR_PSL_Models.xlsx',
-  sheetName = 'model4_spatial_betas',
+  sheetName = 'model3_spatial_betas',
   row.names = FALSE,
   append = TRUE
 )
 
-# 3.6 - 5) (4) + share births and headWomen
-
-mod5 <- 
-  errorsarlm(
-    as.vector( TFR ) ~
-      psl18.p + brancos18.p + nulos18.p + pop.scale + 
-      pbf + educSecd.fem + religPent + depRatio.elder +
-      womenHead + share_adolbirths_2010 +
-      x + y ,
-    listw       = listw.map, 
-    zero.policy = TRUE, 
-    data        = map.dat
-  )
-
-resmod5 <- 
-  summary( mod5 )
-
-res_betas <- 
-  resmod5$Coef %>% as.data.table %>%
-  .[ , .( 
-    Var      = row.names( resmod5$Coef ),
-    Estimate = Estimate %>% round( 5 ), 
-    Pval     = `Pr(>|z|)` %>% round( 5 ) ) ]
-
-write.xlsx(
-  res_betas,
-  file = 'OUTPUTS/TFR_PSL_Models.xlsx',
-  sheetName = 'model5_spatial_betas',
-  row.names = FALSE,
-  append = TRUE
-)
 ####################################################################
 
 ### 4. PSL ~ TFR #---------------------------
@@ -344,10 +289,10 @@ vif_test <-
   vif(
     lm(
       psl18.p ~ 
-        TFR + brancos18.p + nulos18.p + 
-        pop.scale + pbf + 
-        educSecd.fem + religPent + depRatio.elder + 
-        womenHead + share_adolbirths_2010 + 
+        TFR + brancos18.p + nulos18.p + pop.scale +
+        pbf + educSecd_Terc.fem + religPent + depRatio.elder +
+        womenHead + share_adolbirths_2010 +
+        share_fem_politics +
         x + y,
       data = map.dat
     )
@@ -370,7 +315,10 @@ write.xlsx(
 mod1 <- 
   lm(
     psl18.p ~ 
-      TFR + brancos18.p + nulos18.p + pop.scale,
+      TFR + brancos18.p + nulos18.p + pop.scale +
+      pbf + educSecd_Terc.fem + religPent + depRatio.elder +
+      womenHead + share_adolbirths_2010 +
+      share_fem_politics,
     data = map.dat
   )
 
@@ -389,17 +337,20 @@ res_betas$r2 <- resmod1$r.squared %>% round( 5 )
 write.xlsx(
   res_betas,
   file = 'OUTPUTS/PSL_TFR_Models.xlsx',
-  sheetName = 'model1_betas',
+  sheetName = 'model1_covs_betas',
   row.names = FALSE,
   append = TRUE
 )
 
-# 3.3 - 2) TFR ~ PSL + (1) + pbf + educSecd.fem + religPent + depRatio.elder
+# 3.3 - 2) TFR ~ PSL + covs + x + y
 mod2 <- 
   lm(
     psl18.p ~ 
       TFR + brancos18.p + nulos18.p + pop.scale +
-      pbf + educSecd.fem + religPent + depRatio.elder,
+      pbf + educSecd_Terc.fem + religPent + depRatio.elder +
+      womenHead + share_adolbirths_2010 +
+      share_fem_politics +
+      x + y,
     data = map.dat
   )
 
@@ -420,120 +371,44 @@ res_betas$r2 <- resmod2$r.squared %>% round( 5 )
 write.xlsx(
   res_betas,
   file = 'OUTPUTS/PSL_TFR_Models.xlsx',
-  sheetName = 'model2_betas',
+  sheetName = 'model2_xy_betas',
   row.names = FALSE,
   append = TRUE
 )
 
-# 3.4 - 3) TFR ~ PSL + (1) + pbf + educSecd.fem + religPent + depRatio.elder + womenHead + shareadolbirths
-mod3 <- 
-  lm(
-    psl18.p ~ 
+# 3.4 - 3) TFR ~ PSL + covs + x + y + spatial
+mod3 <-  
+  errorsarlm(
+    as.vector( psl18.p ) ~ 
       TFR + brancos18.p + nulos18.p + pop.scale +
-      pbf + educSecd.fem + religPent + depRatio.elder +
-      womenHead + share_adolbirths_2010,
-    data = map.dat
+      pbf + educSecd_Terc.fem + religPent + depRatio.elder +
+      womenHead + share_adolbirths_2010 +
+      share_fem_politics +
+      x + y,
+    listw       = listw.map, 
+    zero.policy = TRUE, 
+    data        = map.dat
   )
 
 resmod3 <- 
   summary( mod3 )
 
 res_betas <- 
-  resmod3$coefficients %>% 
-  as.data.table %>%
+  resmod3$Coef %>% as.data.table %>%
   .[ , .( 
-    Var      = row.names( resmod3$coefficients ),
-    Estimate = Estimate %>% round( 5 ), 
-    Pval     = `Pr(>|t|)` %>% round( 5 ) ) ]
-
-
-res_betas$r2 <- resmod3$r.squared %>% round( 5 )
-
-write.xlsx(
-  res_betas,
-  file = 'OUTPUTS/PSL_TFR_Models.xlsx',
-  sheetName = 'model3_betas',
-  row.names = FALSE,
-  append = TRUE
-)
-
-# 3.5 - 4) TFR ~ PSL + (2) + spatial
-# 
-# summary(
-#   lm.LMtests(
-#     lm(
-#       TFR ~ 
-#         psl18.p + brancos18.p + nulos18.p + 
-#         pop.scale + pbf +  educSecd.fem + religPent + depRatio.elder +
-#         x + y,
-#       data = map.dat
-#     ),
-#     listw.map, 
-#     test = c( "LMerr", "LMlag", "RLMerr", "RLMlag", "SARMA" ),
-#     zero.policy = TRUE
-#   )
-# )
-
-mod4 <- 
-  errorsarlm(
-    as.vector( psl18.p ) ~ 
-      TFR + brancos18.p + nulos18.p + pop.scale + 
-      pbf + educSecd.fem + religPent + depRatio.elder +
-      x + y ,
-    listw       = listw.map, 
-    zero.policy = TRUE, 
-    data        = map.dat
-  )
-
-resmod4 <- 
-  summary( mod4 )
-
-res_betas <- 
-  resmod4$Coef %>% as.data.table %>%
-  .[ , .( 
-    Var      = row.names( resmod4$Coef ),
+    Var      = row.names( resmod3$Coef ),
     Estimate = Estimate %>% round( 5 ), 
     Pval     = `Pr(>|z|)` %>% round( 5 ) ) ]
 
 write.xlsx(
   res_betas,
   file = 'OUTPUTS/PSL_TFR_Models.xlsx',
-  sheetName = 'model4_spatial_betas',
+  sheetName = 'model3_spatial_betas',
   row.names = FALSE,
   append = TRUE
 )
 
-# 3.6 - 5) (4) + share births and headWomen
 
-mod5 <- 
-  errorsarlm(
-    as.vector( psl18.p ) ~
-      TFR + brancos18.p + nulos18.p + pop.scale + 
-      pbf + educSecd.fem + religPent + depRatio.elder +
-      womenHead + share_adolbirths_2010 +
-      x + y ,
-    listw       = listw.map, 
-    zero.policy = TRUE, 
-    data        = map.dat
-  )
-
-resmod5 <- 
-  summary( mod5 )
-
-res_betas <- 
-  resmod5$Coef %>% as.data.table %>%
-  .[ , .( 
-    Var      = row.names( resmod5$Coef ),
-    Estimate = Estimate %>% round( 5 ), 
-    Pval     = `Pr(>|z|)` %>% round( 5 ) ) ]
-
-write.xlsx(
-  res_betas,
-  file = 'OUTPUTS/PSL_TFR_Models.xlsx',
-  sheetName = 'model5_spatial_betas',
-  row.names = FALSE,
-  append = TRUE
-)
 ####################################################################
 
 
